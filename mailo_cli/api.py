@@ -1,18 +1,25 @@
 """Thin HTTP adapter for selected offline MAILO engine workflows."""
 
+import asyncio
 import json
+import logging
 import os
+import time
+import uuid
 from importlib.resources import files
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
 from mailo_cli.pipeline import export_findings
 from mailo_cli.services import execute_packaged_query
 from mailo_cli.shape_registry import ShapeRegistry
+from mailo_cli.settings import load_api_settings
 from mailo_cli.validate_cmd import build_turtle, parse_violations, run_shacl
 
 
@@ -85,6 +92,59 @@ app = FastAPI(
 )
 _RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
 _SHAPE_REGISTRY = ShapeRegistry(_RESOURCE_DIR, os.getenv("MAILO_SHAPES_MANIFEST"))
+_SETTINGS = load_api_settings()
+_LOGGER = logging.getLogger("mailo.api")
+
+if _SETTINGS.cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=list(_SETTINGS.cors_origins),
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
+    )
+
+
+@app.middleware("http")
+async def harden_http(request: Request, call_next):
+    request_id = str(uuid.uuid4())
+    started = time.perf_counter()
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > _SETTINGS.max_request_bytes:
+                response = JSONResponse(
+                    status_code=413,
+                    content={"detail": "Request body exceeds configured size limit"},
+                )
+            else:
+                response = await asyncio.wait_for(
+                    call_next(request), timeout=_SETTINGS.request_timeout_seconds
+                )
+        except ValueError:
+            response = JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+        except TimeoutError:
+            response = JSONResponse(status_code=504, content={"detail": "Request timed out"})
+    else:
+        try:
+            response = await asyncio.wait_for(
+                call_next(request), timeout=_SETTINGS.request_timeout_seconds
+            )
+        except TimeoutError:
+            response = JSONResponse(status_code=504, content={"detail": "Request timed out"})
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    _LOGGER.info(json.dumps({
+        "event": "http_request",
+        "request_id": request_id,
+        "method": request.method,
+        "path": request.url.path,
+        "status": response.status_code,
+        "duration_ms": round((time.perf_counter() - started) * 1000, 2),
+    }))
+    return response
 
 
 def _bad_request(operation):

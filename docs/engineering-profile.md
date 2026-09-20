@@ -113,6 +113,7 @@ The architecture deliberately keeps model-assisted structuring separate from SHA
 - optional Anthropic-backed constrained tool loop
 - optional FastAPI service layer with Pydantic request/response contracts
 - operator-configured, SHA-256-pinned external SHACL shape profiles
+- conservative API controls: request-size limit, timeout, disabled-by-default CORS, request IDs, and JSON access logs
 - Docker API image and Compose configuration
 - pytest regression suite
 - GitHub Actions CI, including API and container health smoke tests
@@ -129,7 +130,7 @@ These are planned improvements, not current implementation claims:
    Compare graph-only retrieval with vector-supported retrieval using measurable precision/source-support criteria.
 
 3. **Service hardening**
-   Add authentication, input limits, structured logging, health/readiness endpoints, and deployment observability.
+   Add authentication, process-level resource limits, deployment observability, and operational alerting.
 
 ## Portfolio placement
 

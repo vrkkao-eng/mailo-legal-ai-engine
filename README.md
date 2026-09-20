@@ -175,6 +175,24 @@ not make its conformance result a legal conclusion.
 The Docker/Compose files package the API only. They do not include Qdrant, a
 vector database, retrieval, authentication, rate limits, or deployment setup.
 
+### API runtime controls
+
+The service defaults to a 1 MiB declared request-body limit, a 30-second
+request deadline, and no CORS origins. It returns a generated `X-Request-ID`,
+adds basic browser-safety response headers, and emits a JSON access-log event
+with method, path, status, and duration. Configure the controls through
+environment variables (or Compose):
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MAILO_MAX_REQUEST_BYTES` | `1048576` | Maximum declared request body (up to 10 MiB) |
+| `MAILO_REQUEST_TIMEOUT_SECONDS` | `30` | Request deadline (up to 300 seconds) |
+| `MAILO_CORS_ORIGINS` | empty | Comma-separated, explicit browser origins; empty disables CORS |
+
+The deadline protects the HTTP response path but does not turn RDFLib or
+pySHACL into a resource sandbox; use trusted local shapes and deploy with
+appropriate process-level CPU/memory limits.
+
 ## Using the public MAILO ontology
 
 Keep the application and ontology releases separate:

@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 import mailo_cli.api as api
 from mailo_cli.shape_registry import ShapeRegistry
+from mailo_cli.settings import ApiSettings, load_api_settings
 
 
 app = api.app
@@ -14,8 +15,30 @@ client = TestClient(app)
 
 
 def test_health_and_ready():
-    assert client.get("/health").json() == {"status": "ok"}
+    health = client.get("/health")
+    assert health.json() == {"status": "ok"}
+    assert health.headers["x-request-id"]
+    assert health.headers["x-content-type-options"] == "nosniff"
+    assert health.headers["x-frame-options"] == "DENY"
+    assert health.headers["referrer-policy"] == "no-referrer"
     assert client.get("/ready").json() == {"status": "ready"}
+
+
+def test_declared_oversize_request_is_rejected(monkeypatch):
+    monkeypatch.setattr(api, "_SETTINGS", ApiSettings(max_request_bytes=10))
+    response = client.post("/graph", content="{" + "x" * 20 + "}")
+    assert response.status_code == 413
+    assert "size limit" in response.json()["detail"]
+
+
+def test_service_settings_are_explicit_and_conservative(monkeypatch):
+    monkeypatch.setenv("MAILO_MAX_REQUEST_BYTES", "2048")
+    monkeypatch.setenv("MAILO_REQUEST_TIMEOUT_SECONDS", "12")
+    monkeypatch.setenv("MAILO_CORS_ORIGINS", "https://app.example, https://admin.example")
+    settings = load_api_settings()
+    assert settings.max_request_bytes == 2048
+    assert settings.request_timeout_seconds == 12
+    assert settings.cors_origins == ("https://app.example", "https://admin.example")
 
 
 def test_graph_uses_existing_export_pipeline():
