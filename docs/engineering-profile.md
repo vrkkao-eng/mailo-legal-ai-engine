@@ -127,7 +127,7 @@ These are planned improvements, not current implementation claims:
    Add legal-document retrieval only after defining an evaluation corpus, citation expectations, and failure cases.
 
 2. **Retrieval evaluation**
-   Compare graph-only retrieval with vector-supported retrieval using measurable precision/source-support criteria.
+   [A candidate question/source seed](retrieval-evaluation-seed.md) exists. Build and adjudicate the corpus, then compare graph-only retrieval with vector-supported retrieval using measurable recall and source-support criteria. No benchmark results exist yet.
 
 3. **Service hardening**
    Add authentication, process-level resource limits, deployment observability, and operational alerting.

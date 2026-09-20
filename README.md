@@ -87,13 +87,15 @@ The finding graph and system-description validation are deliberately separate in
 | FastAPI service layer for offline graph, demo-shape validation, and reviewed SPARQL | Deployment and observability |
 | RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
-| SHACL validation + structured reports | Retrieval evaluation set and metrics |
+| SHACL validation + structured reports | Adjudicated retrieval evaluation set and metrics |
 | Source-linked findings | Auth / request limits for service use |
 | pytest regression tests | Deployment and observability |
 | GitHub Actions CI, including container build and `/health` smoke test | Deployment pipeline |
 | Docker API image and Compose configuration | Production service hardening |
 
 The right-hand column is a roadmap, **not a claim of current implementation**.
+
+A [candidate retrieval-evaluation seed](docs/retrieval-evaluation-seed.md) lists version-pinned public sources, question prompts, and provisional locators. It is not an adjudicated corpus or measured retrieval benchmark.
 
 ## Why this problem matters
 

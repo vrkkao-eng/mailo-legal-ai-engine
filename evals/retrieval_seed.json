@@ -1,0 +1,171 @@
+{
+  "schema_version": "0.1",
+  "status": "candidate_unadjudicated",
+  "prepared_on": "2026-09-20",
+  "purpose": "Seed questions and source locators for a future legal-document retrieval evaluation; not a scored benchmark or legal-answer key.",
+  "sources": [
+    {
+      "id": "ai_act_2026_07_27",
+      "title": "Regulation (EU) 2024/1689 (AI Act)",
+      "authority_type": "regulation",
+      "version": "EUR-Lex consolidated text dated 2026-07-27; documentary version",
+      "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/2026-07-27/eng"
+    },
+    {
+      "id": "mdr_2026_01_01",
+      "title": "Regulation (EU) 2017/745 (MDR)",
+      "authority_type": "regulation",
+      "version": "EUR-Lex consolidated text dated 2026-01-01; documentary version",
+      "url": "https://eur-lex.europa.eu/eli/reg/2017/745/2026-01-01/eng"
+    },
+    {
+      "id": "mdcg_2019_11_rev1",
+      "title": "MDCG 2019-11 rev.1: Qualification and Classification of Software",
+      "authority_type": "non_binding_guidance",
+      "version": "June 2025 rev.1",
+      "url": "https://health.ec.europa.eu/document/download/b45335c5-1679-4c71-a91c-fc7a4d37f12b_en?filename=mdcg_2019_11_en.pdf"
+    },
+    {
+      "id": "mdcg_2025_6",
+      "title": "MDCG 2025-6 / AIB 2025-1: MDR/IVDR and AI Act interplay FAQ",
+      "authority_type": "non_binding_guidance",
+      "version": "June 2025",
+      "url": "https://health.ec.europa.eu/document/download/b78a17d7-e3cd-4943-851d-e02a2f22bbb4_en?filename=mdcg_2025-6_en.pdf"
+    },
+    {
+      "id": "gdpr_2016_oj",
+      "title": "Regulation (EU) 2016/679 (GDPR)",
+      "authority_type": "regulation",
+      "version": "2016 Official Journal text",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A32016R0679"
+    },
+    {
+      "id": "schufa_c_634_21",
+      "title": "CJEU judgment, SCHUFA Holding (Scoring), C-634/21",
+      "authority_type": "court_judgment_credit_scoring",
+      "version": "Judgment of 2023-12-07",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A62021CJ0634"
+    },
+    {
+      "id": "dnb_c_203_22",
+      "title": "CJEU judgment, Dun & Bradstreet Austria, C-203/22",
+      "authority_type": "court_judgment_credit_scoring",
+      "version": "Judgment of 2025-02-27",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A62022CJ0203"
+    }
+  ],
+  "queries": [
+    {
+      "id": "R01",
+      "question": "Where does the AI Act set out the product-related conditions for classifying an AI system as high-risk?",
+      "task_type": "single_source_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "ai_act_2026_07_27", "locator": "Article 6(1)"}]
+    },
+    {
+      "id": "R02",
+      "question": "Where does the MDR define a medical device, including software intended for specified medical purposes?",
+      "task_type": "single_source_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "mdr_2026_01_01", "locator": "Article 2(1)"}]
+    },
+    {
+      "id": "R03",
+      "question": "Find the MDR classification rule for software providing information used for diagnostic or therapeutic decisions.",
+      "task_type": "single_source_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "mdr_2026_01_01", "locator": "Annex VIII, Chapter III, Rule 11"}]
+    },
+    {
+      "id": "R04",
+      "question": "Where does MDCG 2019-11 rev.1 discuss qualification criteria for medical device software?",
+      "task_type": "guidance_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "mdcg_2019_11_rev1", "locator": "Sections 3.1-3.2"}]
+    },
+    {
+      "id": "R05",
+      "question": "Find MDCG 2019-11 rev.1's discussion of MDR Rule 11 for medical device software.",
+      "task_type": "guidance_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "mdcg_2019_11_rev1", "locator": "Section 4.2.1"}]
+    },
+    {
+      "id": "R06",
+      "question": "Which MDCG FAQ discusses the conditions for medical device AI to be high-risk under AI Act Article 6(1)?",
+      "task_type": "guidance_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "mdcg_2025_6", "locator": "Question 2"}]
+    },
+    {
+      "id": "R07",
+      "question": "Where does MDCG 2025-6 discuss whether AI Act high-risk status changes a device's MDR/IVDR risk class?",
+      "task_type": "guidance_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "mdcg_2025_6", "locator": "Question 4"}]
+    },
+    {
+      "id": "R08",
+      "question": "Find MDCG 2025-6's discussion of human oversight for high-risk medical device AI.",
+      "task_type": "guidance_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "mdcg_2025_6", "locator": "Question 18"}]
+    },
+    {
+      "id": "R09",
+      "question": "Where does the GDPR address a person's right not to be subject to certain solely automated decisions?",
+      "task_type": "single_source_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "gdpr_2016_oj", "locator": "Article 22(1)"}]
+    },
+    {
+      "id": "R10",
+      "question": "Find the GDPR access provision concerning meaningful information about the logic involved in automated decision-making.",
+      "task_type": "single_source_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "gdpr_2016_oj", "locator": "Article 15(1)(h)"}]
+    },
+    {
+      "id": "R11",
+      "question": "Find the SCHUFA judgment's answer concerning when creation of a credit probability value can constitute an automated individual decision.",
+      "task_type": "judgment_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "schufa_c_634_21", "locator": "Paragraph 73 (operative answer); see also paragraphs 61-62"}]
+    },
+    {
+      "id": "R12",
+      "question": "Where does Dun & Bradstreet Austria explain what meaningful information about the logic of credit profiling must convey?",
+      "task_type": "judgment_locator",
+      "support_expected": true,
+      "targets": [{"source_id": "dnb_c_203_22", "locator": "Paragraphs 58-61"}]
+    },
+    {
+      "id": "R13",
+      "question": "Retrieve both the AI Act's product-route high-risk classification provision and the MDCG FAQ applying it to medical device AI.",
+      "task_type": "multi_source_locator",
+      "support_expected": true,
+      "targets": [
+        {"source_id": "ai_act_2026_07_27", "locator": "Article 6(1)"},
+        {"source_id": "mdcg_2025_6", "locator": "Question 2"}
+      ]
+    },
+    {
+      "id": "R14",
+      "question": "Is an unnamed, undescribed hospital AI product legally compliant with both the MDR and AI Act?",
+      "task_type": "insufficient_facts",
+      "support_expected": false,
+      "targets": [],
+      "related_sources": ["ai_act_2026_07_27", "mdr_2026_01_01"],
+      "reason": "No product facts, intended purpose, classification, conformity evidence, or applicable-time analysis are supplied."
+    },
+    {
+      "id": "R15",
+      "question": "Which of the two cited CJEU judgments rules that a specific medical AI device complies with the MDR?",
+      "task_type": "false_premise",
+      "support_expected": false,
+      "targets": [],
+      "related_sources": ["schufa_c_634_21", "dnb_c_203_22"],
+      "reason": "Both selected judgments concern credit scoring/profiling, not an MDR compliance ruling on a medical AI device."
+    }
+  ]
+}
