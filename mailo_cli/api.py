@@ -94,6 +94,12 @@ _RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
 _SHAPE_REGISTRY = ShapeRegistry(_RESOURCE_DIR, os.getenv("MAILO_SHAPES_MANIFEST"))
 _SETTINGS = load_api_settings()
 _LOGGER = logging.getLogger("mailo.api")
+if not _LOGGER.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(message)s"))
+    _LOGGER.addHandler(_handler)
+_LOGGER.setLevel(logging.INFO)
+_LOGGER.propagate = False
 
 if _SETTINGS.cors_origins:
     app.add_middleware(
