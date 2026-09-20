@@ -48,6 +48,6 @@ the boundary between machine conformance and legal interpretation.”
 3. Compare graph-only retrieval with an optional vector index only after defining
    retrieval metrics and a reproducible evaluation protocol.
 
-For Netcompany's legal-document / knowledge-retrieval narrative, use the existing
+For legal-document / knowledge-retrieval narrative, use the existing
 CLI and validation evidence now; present API deployment and vector retrieval as
 a future engineering increment until implemented.
