@@ -1,4 +1,4 @@
-# Netcompany / FDE portfolio connection
+# FDE portfolio connection
 
 ## A defensible project description
 
