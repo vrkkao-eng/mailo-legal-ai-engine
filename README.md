@@ -88,6 +88,7 @@ The finding graph and system-description validation are deliberately separate in
 | RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
 | SHACL validation + structured reports | Adjudicated retrieval evaluation set and metrics |
+| Exploratory offline PDF acquisition and source-level lexical baseline | Passage-level citation and abstention evaluation |
 | Source-linked findings | Auth / request limits for service use |
 | pytest regression tests | Deployment and observability |
 | GitHub Actions CI, including container build and `/health` smoke test | Deployment pipeline |
@@ -95,7 +96,7 @@ The finding graph and system-description validation are deliberately separate in
 
 The right-hand column is a roadmap, **not a claim of current implementation**.
 
-A [candidate retrieval-evaluation seed](docs/retrieval-evaluation-seed.md) lists version-pinned public sources, question prompts, and provisional locators. It is not an adjudicated corpus or measured retrieval benchmark.
+A [candidate retrieval-evaluation seed and offline lexical baseline](docs/retrieval-evaluation-seed.md) cover version-pinned public sources and provisional locators. The baseline is exploratory, source-level only; it is not an adjudicated retrieval benchmark or an API feature.
 
 ## Why this problem matters
 

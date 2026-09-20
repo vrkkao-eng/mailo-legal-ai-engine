@@ -118,16 +118,17 @@ The architecture deliberately keeps model-assisted structuring separate from SHA
 - pytest regression suite
 - GitHub Actions CI, including API and container health smoke tests
 - wheel build and installed-package smoke test
+- version-pinned PDF acquisition and exploratory source-level BM25 scoring tool (offline, outside the API)
 
 ## Next engineering increments
 
 These are planned improvements, not current implementation claims:
 
 1. **Vector retrieval / Qdrant**
-   Add legal-document retrieval only after defining an evaluation corpus, citation expectations, and failure cases.
+   Consider integration only after adjudicating the evaluation corpus, citation expectations, and failure cases.
 
 2. **Retrieval evaluation**
-   [A candidate question/source seed](retrieval-evaluation-seed.md) exists. Build and adjudicate the corpus, then compare graph-only retrieval with vector-supported retrieval using measurable recall and source-support criteria. No benchmark results exist yet.
+   [A candidate question/source seed and exploratory lexical tool](retrieval-evaluation-seed.md) exist. Adjudicate passage-level evidence and abstention cases, then compare graph-only retrieval with vector-supported retrieval using measurable recall and source-support criteria. No adjudicated benchmark results exist yet.
 
 3. **Service hardening**
    Add authentication, process-level resource limits, deployment observability, and operational alerting.
