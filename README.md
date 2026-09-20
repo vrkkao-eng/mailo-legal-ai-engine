@@ -83,14 +83,15 @@ The finding graph and system-description validation are deliberately separate in
 
 | Implemented now | Next engineering increment |
 | --- | --- |
-| Python package + CLI | FastAPI service layer |
-| RDF / JSON-LD export | Docker containerisation |
+| Python package + CLI | API authentication and request limits |
+| FastAPI service layer for offline graph, demo-shape validation, and reviewed SPARQL | Deployment and observability |
+| RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
 | SHACL validation + structured reports | Retrieval evaluation set and metrics |
 | Source-linked findings | Auth / request limits for service use |
 | pytest regression tests | Deployment and observability |
-| GitHub Actions CI | Container build / deployment pipeline |
-| Wheel build + smoke test | Production service hardening |
+| GitHub Actions CI, including container build and `/health` smoke test | Deployment pipeline |
+| Docker API image and Compose configuration | Production service hardening |
 
 The right-hand column is a roadmap, **not a claim of current implementation**.
 
@@ -128,6 +129,28 @@ Core commands:
 Exit status is 0 for success/conformance, 1 for nonconformance or a reported processing error, and 2 for command-line usage errors.
 
 Demo shapes are synthetic engineering examples, not legal rules.
+
+## HTTP service (local development)
+
+The service is an optional, local API adapter over the same graph export, SHACL,
+and reviewed-query functions used by the CLI. It does not expose `/research`.
+
+```bash
+python -m pip install -e ".[service]"
+uvicorn mailo_cli.api:app --reload
+# or: docker compose up --build
+```
+
+It exposes `GET /health`, `GET /ready`, `POST /graph`, `POST /validate`, and
+`POST /sparql`. Interactive request schemas are available at `/docs` when the
+local service is running. `/validate` accepts only the packaged synthetic
+`demo` shapes in this increment; it is not an endpoint for arbitrary remote or
+user-supplied SHACL rules. `/sparql` similarly accepts only a named packaged
+reviewed query. These constraints preserve the existing validation boundary and
+avoid presenting the service as a general-purpose query or rule-execution host.
+
+The Docker/Compose files package the API only. They do not include Qdrant, a
+vector database, retrieval, authentication, rate limits, or deployment setup.
 
 ## Using the public MAILO ontology
 
@@ -229,7 +252,7 @@ This is a **research prototype**, not a production service.
 
 There is currently:
 
-- no deployed API service;
+- no deployed API service (the repository includes a local/container API only);
 - no vector database;
 - no retrieval benchmark;
 - no independent legal validation; and

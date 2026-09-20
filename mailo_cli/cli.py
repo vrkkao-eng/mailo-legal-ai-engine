@@ -6,9 +6,9 @@ import os
 from importlib.resources import files
 from pathlib import Path
 import click
-from rdflib import Graph
 from mailo_cli import __version__
 from mailo_cli.pipeline import export_findings, read_json, validate_findings
+from mailo_cli.services import execute_packaged_query
 from mailo_cli.validate_cmd import run_validate
 
 RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
@@ -93,15 +93,10 @@ def sparql(ontology, built_in):
     """Run a reviewed SELECT query; emits full RDF term strings as JSON."""
 
     def execute():
-        g = Graph().parse(data=ontology.read_text(encoding="utf-8"), format="turtle")
-        query = (RESOURCE_DIR / "queries" / (built_in + ".sparql")).read_text(
-            encoding="utf-8"
+        return execute_packaged_query(
+            ontology.read_text(encoding="utf-8"),
+            RESOURCE_DIR / "queries" / (built_in + ".sparql"),
         )
-        result = g.query(query)
-        return [
-            {str(v): str(row[v]) if row[v] is not None else None for v in result.vars}
-            for row in result
-        ]
 
     click.echo(json.dumps(guarded(execute), ensure_ascii=False, indent=2))
 

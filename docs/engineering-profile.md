@@ -13,7 +13,9 @@ The engineering evidence in this repository is intentionally narrower than the o
 - reproducible validation reports with input/shape hashes;
 - optional constrained LLM tool use on supplied material;
 - pytest regression tests; and
-- GitHub Actions CI with Python 3.11–3.13, wheel build, and clean-environment smoke testing.
+- FastAPI endpoints for local graph export, synthetic-shape validation, and reviewed SPARQL queries;
+- Docker/Compose API scaffolding; and
+- GitHub Actions CI with Python 3.11–3.13, API tests, wheel build, clean-environment CLI smoke testing, and container health smoke testing.
 
 It does **not** claim production deployment, vector retrieval, independent legal verification, or publication of the original private multi-agent workflow.
 
@@ -44,7 +46,8 @@ It does **not** claim production deployment, vector retrieval, independent legal
    - multi-version Python testing;
    - wheel build;
    - installation outside the checkout; and
-   - CLI smoke testing.
+   - CLI and API tests; and
+   - container `/health` smoke testing.
 
 The point of the demonstration is not to claim automated legal decision-making. It is to show how a domain requirement becomes explicit input, a graph representation, a testable constraint, a machine-readable result, and a documented limitation.
 
@@ -80,6 +83,11 @@ RDFLib + pySHACL
 structured reports + hashes
 ```
 
+The optional local API is a thin adapter over those existing workflows. It
+exposes health/readiness checks and graph, synthetic-demo validation, and
+reviewed SPARQL endpoints; `/research` remains CLI-only. The API does not
+introduce a vector database, retrieval system, or legal-decision endpoint.
+
 ### Validation boundary
 
 The architecture deliberately keeps model-assisted structuring separate from SHACL validation. LLM output is not automatically converted into a legal-compliance conclusion.
@@ -103,27 +111,23 @@ The architecture deliberately keeps model-assisted structuring separate from SHA
 - JSON / Turtle / Markdown validation reports
 - SHA-256 input and shapes-file hashes
 - optional Anthropic-backed constrained tool loop
+- optional FastAPI service layer with Pydantic request/response contracts
+- Docker API image and Compose configuration
 - pytest regression suite
-- GitHub Actions CI
+- GitHub Actions CI, including API and container health smoke tests
 - wheel build and installed-package smoke test
 
 ## Next engineering increments
 
 These are planned improvements, not current implementation claims:
 
-1. **FastAPI service layer**  
-   Expose selected graph/query/validation workflows through explicit API contracts.
-
-2. **Docker containerisation**  
-   Package the service and its runtime dependencies for reproducible deployment.
-
-3. **Vector retrieval / Qdrant**  
+1. **Vector retrieval / Qdrant**
    Add legal-document retrieval only after defining an evaluation corpus, citation expectations, and failure cases.
 
-4. **Retrieval evaluation**  
+2. **Retrieval evaluation**
    Compare graph-only retrieval with vector-supported retrieval using measurable precision/source-support criteria.
 
-5. **Service hardening**  
+3. **Service hardening**
    Add authentication, input limits, structured logging, health/readiness endpoints, and deployment observability.
 
 ## Portfolio placement
