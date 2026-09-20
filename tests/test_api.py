@@ -1,6 +1,13 @@
+import hashlib
+import json
+
 from fastapi.testclient import TestClient
 
-from mailo_cli.api import app
+import mailo_cli.api as api
+from mailo_cli.shape_registry import ShapeRegistry
+
+
+app = api.app
 
 
 client = TestClient(app)
@@ -38,7 +45,54 @@ def test_validate_keeps_conformance_boundary_and_allows_nonconformance():
     body = response.json()
     assert body["conforms"] is False
     assert body["results"]
+    assert body["shapes_profile"] == "demo"
+    assert len(body["shapes_sha256"]) == 64
     assert "not a legal compliance determination" in body["scope"]
+
+
+def test_validate_uses_hash_pinned_operator_profile(tmp_path, monkeypatch):
+    shapes = tmp_path / "reviewed-shapes.ttl"
+    shapes.write_text(
+        "@prefix sh: <http://www.w3.org/ns/shacl#> .\n"
+        "@prefix mailo: <https://w3id.org/mailo#> .\n"
+        "@prefix ex: <https://example.org/> .\n"
+        "ex:Shape a sh:NodeShape; sh:targetClass mailo:MedicalAISystem .\n",
+        encoding="utf-8",
+    )
+    digest = hashlib.sha256(shapes.read_bytes()).hexdigest()
+    manifest = tmp_path / "shapes.json"
+    manifest.write_text(json.dumps({"profiles": {"mailo-test-v1": {
+        "file": "reviewed-shapes.ttl", "sha256": digest,
+        "scope": "Conformance to an operator-registered test shape; not legal advice",
+    }}}), encoding="utf-8")
+    monkeypatch.setattr(api, "_SHAPE_REGISTRY", ShapeRegistry(api._RESOURCE_DIR, str(manifest)))
+
+    response = client.post(
+        "/validate",
+        json={"shapes": "mailo-test-v1", "system": {"system_id": "x"}},
+    )
+    assert response.status_code == 200
+    assert response.json()["shapes_profile"] == "mailo-test-v1"
+    assert response.json()["shapes_sha256"] == digest
+
+
+def test_registry_rejects_modified_trusted_shape(tmp_path):
+    shapes = tmp_path / "reviewed-shapes.ttl"
+    shapes.write_text("@prefix sh: <http://www.w3.org/ns/shacl#> .", encoding="utf-8")
+    digest = hashlib.sha256(shapes.read_bytes()).hexdigest()
+    manifest = tmp_path / "shapes.json"
+    manifest.write_text(json.dumps({"profiles": {"mailo-test-v1": {
+        "file": "reviewed-shapes.ttl", "sha256": digest, "scope": "test",
+    }}}), encoding="utf-8")
+    registry = ShapeRegistry(api._RESOURCE_DIR, str(manifest))
+    shapes.write_text("changed", encoding="utf-8")
+
+    try:
+        registry.get("mailo-test-v1")
+    except ValueError as exc:
+        assert "changed on disk" in str(exc)
+    else:
+        raise AssertionError("Modified trusted shapes must be rejected")
 
 
 def test_validate_rejects_unknown_system_fields_safely():

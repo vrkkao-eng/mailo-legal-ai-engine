@@ -84,8 +84,8 @@ structured reports + hashes
 ```
 
 The optional local API is a thin adapter over those existing workflows. It
-exposes health/readiness checks and graph, synthetic-demo validation, and
-reviewed SPARQL endpoints; `/research` remains CLI-only. The API does not
+exposes health/readiness checks and graph, hash-pinned trusted-shapes
+validation, and reviewed SPARQL endpoints; `/research` remains CLI-only. The API does not
 introduce a vector database, retrieval system, or legal-decision endpoint.
 
 ### Validation boundary
@@ -112,6 +112,7 @@ The architecture deliberately keeps model-assisted structuring separate from SHA
 - SHA-256 input and shapes-file hashes
 - optional Anthropic-backed constrained tool loop
 - optional FastAPI service layer with Pydantic request/response contracts
+- operator-configured, SHA-256-pinned external SHACL shape profiles
 - Docker API image and Compose configuration
 - pytest regression suite
 - GitHub Actions CI, including API and container health smoke tests

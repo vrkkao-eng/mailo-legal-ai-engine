@@ -1,6 +1,7 @@
 """Thin HTTP adapter for selected offline MAILO engine workflows."""
 
 import json
+import os
 from importlib.resources import files
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -11,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 from mailo_cli.pipeline import export_findings
 from mailo_cli.services import execute_packaged_query
+from mailo_cli.shape_registry import ShapeRegistry
 from mailo_cli.validate_cmd import build_turtle, parse_violations, run_shacl
 
 
@@ -40,10 +42,10 @@ class GraphResponse(BaseModel):
 
 
 class ValidateRequest(BaseModel):
-    """A system description checked only against a reviewed packaged demo shape."""
+    """A system description checked against an operator-registered shape profile."""
 
     system: dict[str, Any]
-    shapes: Literal["demo"] = "demo"
+    shapes: str = Field(default="demo", pattern=r"^[a-z0-9][a-z0-9._-]{0,63}$")
 
 
 class ValidationResult(BaseModel):
@@ -60,6 +62,8 @@ class ValidateResponse(BaseModel):
     system: str
     conforms: bool
     results: list[ValidationResult]
+    shapes_profile: str
+    shapes_sha256: str
     scope: str
 
 
@@ -80,6 +84,7 @@ app = FastAPI(
     description="Offline graph, reviewed-query, and SHACL-conformance workflows.",
 )
 _RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
+_SHAPE_REGISTRY = ShapeRegistry(_RESOURCE_DIR, os.getenv("MAILO_SHAPES_MANIFEST"))
 
 
 def _bad_request(operation):
@@ -99,8 +104,10 @@ def health() -> dict[str, str]:
 @app.get("/ready")
 def ready() -> dict[str, str]:
     """Report whether packaged runtime resources needed by the API are present."""
-    if not (_RESOURCE_DIR / "demo-shapes.ttl").is_file():
-        raise HTTPException(status_code=503, detail="Packaged validation shapes unavailable")
+    try:
+        _SHAPE_REGISTRY.ready()
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     return {"status": "ready"}
 
 
@@ -126,12 +133,15 @@ def graph(request: GraphRequest) -> GraphResponse:
 def validate(request: ValidateRequest) -> ValidateResponse:
     def run() -> ValidateResponse:
         turtle = build_turtle(request.system)
-        conforms, results_graph, _ = run_shacl(turtle, _RESOURCE_DIR / "demo-shapes.ttl")
+        profile = _SHAPE_REGISTRY.get(request.shapes)
+        conforms, results_graph, _ = run_shacl(turtle, profile.path)
         return ValidateResponse(
             system=request.system["system_id"],
             conforms=bool(conforms),
             results=parse_violations(results_graph),
-            scope="Conformance to packaged synthetic demo shapes; not a legal compliance determination",
+            shapes_profile=profile.name,
+            shapes_sha256=profile.sha256,
+            scope=profile.scope,
         )
 
     return _bad_request(run)

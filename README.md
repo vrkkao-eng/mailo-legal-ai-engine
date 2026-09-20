@@ -143,11 +143,34 @@ uvicorn mailo_cli.api:app --reload
 
 It exposes `GET /health`, `GET /ready`, `POST /graph`, `POST /validate`, and
 `POST /sparql`. Interactive request schemas are available at `/docs` when the
-local service is running. `/validate` accepts only the packaged synthetic
-`demo` shapes in this increment; it is not an endpoint for arbitrary remote or
-user-supplied SHACL rules. `/sparql` similarly accepts only a named packaged
-reviewed query. These constraints preserve the existing validation boundary and
-avoid presenting the service as a general-purpose query or rule-execution host.
+local service is running. `/validate` defaults to the packaged synthetic `demo`
+profile. It may also use an operator-registered external profile, but is not an
+endpoint for arbitrary remote or user-supplied SHACL rules. `/sparql` similarly
+accepts only a named packaged reviewed query. These constraints preserve the
+existing validation boundary and avoid presenting the service as a
+general-purpose query or rule-execution host.
+
+To register a trusted external shapes release, place the shapes file and a
+manifest in the same directory, pin its SHA-256, then set
+`MAILO_SHAPES_MANIFEST` before starting the API:
+
+```json
+{
+  "profiles": {
+    "mailo-ontology-vX.Y.Z": {
+      "file": "mailo_shacl_shapes.ttl",
+      "sha256": "<64 lowercase hexadecimal characters>",
+      "scope": "Conformance to the selected MAILO shapes release; not a legal compliance determination"
+    }
+  }
+}
+```
+
+Profile names are the only shape selection the API accepts. The referenced
+file must remain beside the manifest and match its SHA-256 on every request.
+The validation response records the selected profile and shape hash. A shapes
+release is trusted because an operator has registered and pinned it; this does
+not make its conformance result a legal conclusion.
 
 The Docker/Compose files package the API only. They do not include Qdrant, a
 vector database, retrieval, authentication, rate limits, or deployment setup.
