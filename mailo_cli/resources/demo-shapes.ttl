@@ -1,0 +1,15 @@
+# Synthetic engineering constraint; not a legal rule or official MAILO shape.
+@prefix mailo: <https://w3id.org/mailo#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <https://example.org/demo/> .
+
+ex:ReviewDemo a sh:NodeShape ;
+    sh:targetClass mailo:MedicalAISystem ;
+    sh:property [
+        sh:path mailo:hasIndividualNonAutomatedReview ;
+        sh:minCount 1 ;
+        sh:datatype xsd:boolean ;
+        sh:hasValue true ;
+        sh:message "Synthetic example requires a true human-review flag."
+    ] .

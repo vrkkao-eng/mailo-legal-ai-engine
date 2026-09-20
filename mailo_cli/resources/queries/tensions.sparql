@@ -1,0 +1,17 @@
+# tensions.sparql
+# List all cross-framework tensions in the MAILO knowledge graph.
+# Usage: mailo sparql --ontology PATH --built-in tensions
+
+PREFIX mailo: <https://w3id.org/mailo#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?tension (MIN(STR(?rawLabel)) AS ?label) (STR(?conflictType) AS ?type) ?status ?comment
+WHERE {
+  ?tension a mailo:CrossFrameworkTension ;
+           rdfs:label ?rawLabel ;
+           mailo:conflictType ?conflictType ;
+           mailo:hasResolutionStatus ?status .
+  OPTIONAL { ?tension rdfs:comment ?comment . }
+}
+GROUP BY ?tension ?conflictType ?status ?comment
+ORDER BY ?status ?type

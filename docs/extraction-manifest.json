@@ -1,0 +1,46 @@
+[
+  {
+    "path": "mailo_cli/agents/base_agent.py",
+    "source_blob_sha": "ff76860f7022c6bcd0489a9879d6388100e8c697"
+  },
+  {
+    "path": "mailo_cli/exporters/graph_exporter.py",
+    "source_blob_sha": "1c0a98e5a0b1bbe4ea97de6ba0c485d3bfea3c87"
+  },
+  {
+    "path": "mailo_cli/validate_cmd.py",
+    "source_blob_sha": "467c5fccd0cc2de71512d757624b893602b21d72"
+  },
+  {
+    "path": "mailo_cli/cli.py",
+    "source_blob_sha": "cdd16c01a8a6e7664348970b7374cb083dbeaf46"
+  },
+  {
+    "path": "tests/test_agents.py",
+    "source_blob_sha": "3682d642c109ac4137a614ffacf7f5d31f7e6f0e"
+  },
+  {
+    "path": "tests/test_exporters.py",
+    "source_blob_sha": "dbe48a145ac79185186872a23fb325b9fbb0e4a5"
+  },
+  {
+    "path": "queries/cjeu_chain.sparql",
+    "source_blob_sha": "5e22e83465732c321e0957ffff9d06b94519108e"
+  },
+  {
+    "path": "queries/frameworks.sparql",
+    "source_blob_sha": "5b03611c628ceb0eb34f46b97d2b500d7368a470"
+  },
+  {
+    "path": "queries/fto_patent.sparql",
+    "source_blob_sha": "1d52a45ff5fbbab25161d81dbb73a8141239586c"
+  },
+  {
+    "path": "queries/obligations_samd.sparql",
+    "source_blob_sha": "fe7c3cf517602da222768b9c759130402bb0e555"
+  },
+  {
+    "path": "queries/tensions.sparql",
+    "source_blob_sha": "4a96f4928020baabb366b1ed1973c1585fa64d86"
+  }
+]

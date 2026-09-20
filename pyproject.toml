@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mailo-legal-ai-engine"
+version = "0.1.0"
+description = "Python research pipeline, knowledge engineering and SHACL validation for MAILO"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "Victor (Chang-Hua) Kao"}]
+dependencies = ["click>=8.1,<9", "rich>=13,<16", "rdflib>=7,<8", "pyshacl>=0.25,<1"]
+
+[project.optional-dependencies]
+research = ["anthropic>=0.42,<2"]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.23,<2", "build>=1,<2"]
+
+[project.scripts]
+mailo = "mailo_cli.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mailo_cli*"]
+
+[tool.setuptools.package-data]
+mailo_cli = ["resources/*.json", "resources/*.ttl", "resources/queries/*.sparql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

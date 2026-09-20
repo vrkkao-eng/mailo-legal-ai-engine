@@ -1,0 +1,16 @@
+# obligations_samd.sparql
+# Lists encoded obligations; does not infer applicability to a particular system.
+# Usage: mailo sparql --ontology PATH --built-in obligations_samd
+
+PREFIX mailo: <https://w3id.org/mailo#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT DISTINCT ?obligation ?label ?framework ?article
+WHERE {
+  ?obligation a mailo:ComplianceObligation ;
+              rdfs:label ?label .
+  OPTIONAL { ?obligation mailo:governedBy ?fw . ?fw rdfs:label ?framework . }
+  OPTIONAL { ?obligation mailo:groundedIn ?art . ?art rdfs:label ?article . }
+}
+ORDER BY ?framework ?label

@@ -1,0 +1,6 @@
+{
+  "system_id": "SyntheticDemo",
+  "classes": ["MedicalAISystem"],
+  "label": "Synthetic demonstration, not a real medical product",
+  "individual_non_automated_review": true
+}

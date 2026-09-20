@@ -1,0 +1,35 @@
+# fto_patent.sparql
+# Exploratory juxtaposition of patent cases and tensions; not an FTO opinion.
+# Tensions are not joined to individual cases: co-display is not a case-specific link.
+# Usage: mailo sparql --ontology PATH --built-in fto_patent
+
+PREFIX mailo: <https://w3id.org/mailo#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?item ?type ?label ?tension ?conflictType ?resolutionStatus
+WHERE {
+  {
+    ?item a mailo:UPCCase ;
+          rdfs:label ?label .
+    BIND("UPCCase" AS ?type)
+    OPTIONAL {
+      ?tension a mailo:CrossFrameworkTension ;
+               mailo:conflictType ?conflictType ;
+               mailo:hasResolutionStatus ?resolutionStatus .
+      FILTER(?conflictType = "SemanticGranularityConflict")
+    }
+  }
+  UNION
+  {
+    ?item a mailo:EPODecision ;
+          rdfs:label ?label .
+    BIND("EPODecision" AS ?type)
+    OPTIONAL {
+      ?tension a mailo:CrossFrameworkTension ;
+               mailo:conflictType ?conflictType ;
+               mailo:hasResolutionStatus ?resolutionStatus .
+      FILTER(?conflictType = "SemanticGranularityConflict")
+    }
+  }
+}
+ORDER BY ?type ?label

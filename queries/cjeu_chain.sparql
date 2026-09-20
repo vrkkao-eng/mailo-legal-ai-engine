@@ -1,0 +1,19 @@
+# cjeu_chain.sparql
+# Retrieve the CJEU precedent chain and all legal principles derived from each case.
+# Usage: mailo sparql --ontology PATH --built-in cjeu_chain
+
+PREFIX mailo: <https://w3id.org/mailo#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?case ?caseLabel ?principle ?principleLabel ?precedenceLevel
+WHERE {
+  ?case a mailo:CJEUCase ;
+        rdfs:label ?caseLabel .
+  OPTIONAL {
+    ?case mailo:hasPrinciple ?principle .
+    ?principle rdfs:label ?principleLabel .
+    OPTIONAL { ?principle mailo:hasPrecedenceLevel ?precedenceLevel . }
+  }
+}
+ORDER BY ?caseLabel ?principleLabel

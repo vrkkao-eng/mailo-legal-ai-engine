@@ -1,0 +1,19 @@
+# frameworks.sparql
+# Summary of all EU regulatory frameworks in MAILO with article counts.
+# Usage: mailo sparql --ontology PATH --built-in frameworks
+
+PREFIX mailo: <https://w3id.org/mailo#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+
+SELECT ?framework ?label ?identifier ?date (COUNT(?article) AS ?articles)
+WHERE {
+  ?framework a mailo:EURegulation ;
+             rdfs:label ?label .
+  FILTER(LANG(?label) = "en")
+  OPTIONAL { ?framework dcterms:identifier ?identifier . }
+  OPTIONAL { ?framework dcterms:date ?date . }
+  OPTIONAL { ?framework mailo:coversArticle ?article . }
+}
+GROUP BY ?framework ?label ?identifier ?date
+ORDER BY ?date

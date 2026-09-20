@@ -1,0 +1,9 @@
+[
+  {
+    "category": "case_law",
+    "title": "Synthetic oversight example",
+    "content": "Fictional research finding for testing only; it describes a human review step.",
+    "source_url": "https://example.org/synthetic-source",
+    "metadata": {"year": "2026"}
+  }
+]
