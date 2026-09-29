@@ -280,6 +280,16 @@ class AuditEventResponse(StrictModel):
     detail: str
 
 
+class WorkflowStepResponse(StrictModel):
+    sequence: int
+    step: str
+    status: str
+    duration_ms: float
+    detail: str
+    error_code: str | None
+    retryable: bool | None
+
+
 class WorkflowRunResponse(StrictModel):
     run_id: str
     idempotency_key: str
@@ -288,7 +298,12 @@ class WorkflowRunResponse(StrictModel):
     status: str
     created_at: str
     created: bool
+    failed_step: str | None = None
+    error_code: str | None = None
+    retryable: bool | None = None
+    error_detail: str | None = None
     result: dict[str, object]
+    steps: list[WorkflowStepResponse] = Field(default_factory=list)
     review_cases: list[PersistedReviewCaseResponse]
     audit_events: list[AuditEventResponse]
 

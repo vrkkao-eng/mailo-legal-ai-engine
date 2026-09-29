@@ -22,6 +22,7 @@ from mailo_cli.services import execute_packaged_query
 from mailo_cli.shape_registry import ShapeRegistry
 from mailo_cli.settings import load_api_settings
 from mailo_cli.validate_cmd import build_turtle, parse_violations, run_shacl
+from mailo_cli.regulatory.execution import WorkflowExecutionError, execute_durable_workflow
 from mailo_cli.regulatory.persistence import (
     IdempotencyConflict,
     SQLiteWorkflowRepository,
@@ -37,6 +38,7 @@ from mailo_cli.workflow_api import (
     WorkflowEvaluateRequest,
     WorkflowEvaluateResponse,
     WorkflowRunResponse,
+    WorkflowStepResponse,
     to_domain_request,
 )
 
@@ -184,6 +186,18 @@ async def harden_http(request: Request, call_next):
 def _bad_request(operation):
     try:
         return operation()
+    except WorkflowExecutionError as exc:
+        status_code = 503 if exc.retryable else 400
+        raise HTTPException(
+            status_code=status_code,
+            detail={
+                "message": exc.detail,
+                "workflow_run_id": exc.run_id,
+                "failed_step": exc.failed_step.value,
+                "error_code": exc.error_code.value,
+                "retryable": exc.retryable,
+            },
+        ) from exc
     except WorkflowRunNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except IdempotencyConflict as exc:
@@ -297,20 +311,16 @@ def create_workflow_run(
 
     def run() -> WorkflowRunResponse:
         change, obligations, mappings, controls, evidence = to_domain_request(request)
-        result = evaluate_workflow(
-            change,
+        repository = _get_workflow_repository()
+        persisted, created = execute_durable_workflow(
+            repository=repository,
+            idempotency_key=idempotency_key,
+            request_payload=request.model_dump(mode="json"),
+            change=change,
             obligations=obligations,
             mappings=mappings,
             controls=controls,
             evidence=evidence,
-        )
-        repository = _get_workflow_repository()
-        persisted, created = repository.create_run(
-            idempotency_key=idempotency_key,
-            request_payload=request.model_dump(mode="json"),
-            change_id=change.change_id,
-            result=result,
-            evidence_records=evidence.records,
         )
         response.status_code = 201 if created else 200
         return WorkflowRunResponse(
@@ -321,7 +331,15 @@ def create_workflow_run(
             status=persisted.status,
             created_at=persisted.created_at.isoformat(),
             created=created,
+            failed_step=persisted.failed_step,
+            error_code=persisted.error_code,
+            retryable=persisted.retryable,
+            error_detail=persisted.error_detail,
             result=persisted.result_payload,
+            steps=[
+                WorkflowStepResponse.model_validate(item)
+                for item in repository.list_steps(persisted.run_id)
+            ],
             review_cases=[
                 PersistedReviewCaseResponse.model_validate(item)
                 for item in repository.list_review_cases(persisted.run_id)
@@ -350,7 +368,15 @@ def get_workflow_run(run_id: str) -> WorkflowRunResponse:
             status=persisted.status,
             created_at=persisted.created_at.isoformat(),
             created=False,
+            failed_step=persisted.failed_step,
+            error_code=persisted.error_code,
+            retryable=persisted.retryable,
+            error_detail=persisted.error_detail,
             result=persisted.result_payload,
+            steps=[
+                WorkflowStepResponse.model_validate(item)
+                for item in repository.list_steps(persisted.run_id)
+            ],
             review_cases=[
                 PersistedReviewCaseResponse.model_validate(item)
                 for item in repository.list_review_cases(persisted.run_id)

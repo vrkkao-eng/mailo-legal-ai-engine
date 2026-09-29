@@ -480,3 +480,80 @@ def test_persisted_response_rejects_wrong_reviewer_role(tmp_path, monkeypatch):
 
     assert response.status_code == 400
     assert "assigned review role" in response.json()["detail"]
+
+
+
+def test_successful_durable_run_exposes_step_trace(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    response = client.post(
+        "/workflow/runs",
+        json=_workflow_payload(),
+        headers={"Idempotency-Key": "obs-success-001"},
+    )
+
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert body["status"] == "completed"
+    assert [step["step"] for step in body["steps"]] == [
+        "evaluate",
+        "persist",
+        "review_ready",
+    ]
+    assert all(step["status"] == "success" for step in body["steps"])
+    assert body["failed_step"] is None
+    assert body["error_code"] is None
+
+
+def test_failed_durable_run_is_inspectable(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+    payload = _workflow_payload()
+    payload["controls"][0]["obligation_id"] = "other-obligation"
+
+    response = client.post(
+        "/workflow/runs",
+        json=payload,
+        headers={"Idempotency-Key": "obs-failed-001"},
+    )
+
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert detail["failed_step"] == "evaluate"
+    assert detail["error_code"] == "domain_validation_failed"
+    assert detail["retryable"] is False
+    run_id = detail["workflow_run_id"]
+
+    fetched = client.get(f"/workflow/runs/{run_id}")
+    assert fetched.status_code == 200
+    body = fetched.json()
+    assert body["status"] == "failed"
+    assert body["failed_step"] == "evaluate"
+    assert body["error_code"] == "domain_validation_failed"
+    assert body["retryable"] is False
+    assert len(body["steps"]) == 1
+    assert body["steps"][0]["status"] == "failed"
+
+
+def test_idempotent_replay_does_not_duplicate_step_events(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+    payload = _workflow_payload()
+
+    first = client.post(
+        "/workflow/runs",
+        json=payload,
+        headers={"Idempotency-Key": "obs-replay-001"},
+    )
+    second = client.post(
+        "/workflow/runs",
+        json=payload,
+        headers={"Idempotency-Key": "obs-replay-001"},
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 200
+    assert first.json()["run_id"] == second.json()["run_id"]
+    assert len(first.json()["steps"]) == 3
+    assert len(second.json()["steps"]) == 3
