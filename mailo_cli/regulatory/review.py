@@ -322,12 +322,16 @@ class ReviewTrail:
         if len(event_ids) != len(set(event_ids)):
             raise ValueError("duplicate event_id values are not allowed")
 
+        question = self.case.route.question
+        if question is None:
+            raise ValueError("review case is missing its focused review question")
+
         for response in self.responses:
             if response.review_id != review_id:
                 raise ValueError("response references a different review")
             if response.responded_at < self.case.created_at:
                 raise ValueError("response predates review creation")
-            if response.answer not in self.case.route.question.permitted_answers:
+            if response.answer not in question.permitted_answers:
                 raise ValueError("response answer is not permitted by the review question")
 
         for event in self.audit_events:
