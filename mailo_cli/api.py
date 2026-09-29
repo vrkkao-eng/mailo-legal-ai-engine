@@ -87,7 +87,7 @@ class SparqlResponse(BaseModel):
 
 app = FastAPI(
     title="MAILO Legal AI Engine",
-    version="0.3.1",
+    version="0.3.2",
     description="Offline graph, reviewed-query, and SHACL-conformance workflows.",
 )
 _RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
