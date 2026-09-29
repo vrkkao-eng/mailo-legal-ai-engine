@@ -35,6 +35,10 @@ class PersistedWorkflowRun:
     created_at: datetime
     request_payload: dict[str, Any]
     result_payload: dict[str, Any]
+    failed_step: str | None = None
+    error_code: str | None = None
+    retryable: bool | None = None
+    error_detail: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -46,6 +50,10 @@ class PersistedWorkflowRun:
             "created_at": self.created_at.isoformat(),
             "request": self.request_payload,
             "result": self.result_payload,
+            "failed_step": self.failed_step,
+            "error_code": self.error_code,
+            "retryable": self.retryable,
+            "error_detail": self.error_detail,
         }
 
 
@@ -814,4 +822,8 @@ class SQLiteWorkflowRepository:
             created_at=datetime.fromisoformat(row["created_at"]),
             request_payload=json.loads(row["request_json"]),
             result_payload=json.loads(row["result_json"]),
+            failed_step=row["failed_step"],
+            error_code=row["error_code"],
+            retryable=(None if row["retryable"] is None else bool(row["retryable"])),
+            error_detail=row["error_detail"],
         )
