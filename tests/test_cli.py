@@ -79,3 +79,15 @@ def test_live_research_requires_key(tmp_path):
     )
     assert result.exit_code == 1
     assert "ANTHROPIC_API_KEY" in result.output
+
+
+def test_workflow_demo_is_offline_and_machine_readable():
+    result = CliRunner().invoke(main, ["workflow-demo"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["route_count"] == 3
+    assert payload["human_review_count"] == 2
+    assert payload["log_only_count"] == 1
+    assert payload["compliance_determination_produced"] is False
+    assert payload["benchmark"]["routing_accuracy"] == 1.0
+    assert payload["benchmark"]["unsafe_unknown_resolutions"] == 0
