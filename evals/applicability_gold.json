@@ -1,0 +1,10 @@
+{
+  "benchmark_id": "v0.3.3-applicability-seed",
+  "description": "Reviewed seed cases for deterministic applicability and abstention regression testing.",
+  "cases": [
+    {"case_id":"deployer-supported","expected_status":"applies","expected_missing_facts":[]},
+    {"case_id":"actor-mismatch","expected_status":"does_not_apply","expected_missing_facts":[]},
+    {"case_id":"open-world-fact-missing","expected_status":"review_required","expected_missing_facts":["Whether deployment is by a public body."]}
+  ],
+  "interpretation_limit": "Seed regression cases only; not population-level legal applicability accuracy."
+}
