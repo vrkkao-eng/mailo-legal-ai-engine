@@ -139,3 +139,153 @@ def test_sparql_uses_only_packaged_query_names():
         json={"ontology_turtle": "@prefix m: <https://w3id.org/mailo#> .", "built_in": "DROP ALL"},
     )
     assert invalid.status_code == 422
+
+
+def _workflow_payload():
+    return {
+        "change": {
+            "change_id": "ai-act-2026-art-27-4-changed",
+            "change_type": "text_changed",
+            "source_id": "eu-ai-act",
+            "old_version_id": "eu-ai-act-2024-08-01",
+            "new_version_id": "eu-ai-act-2026-07-27",
+            "effective_date": "2026-07-27",
+            "amendment_source_id": "eu-2026-1744",
+            "amendment_locator": {
+                "provision": "Article 1",
+                "paragraph": "13",
+                "point": "a",
+                "subparagraph": None,
+            },
+            "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+            "summary": "Reviewed Article 27(4) change.",
+            "old_locator": {
+                "provision": "Article 27",
+                "paragraph": "4",
+                "point": None,
+                "subparagraph": None,
+            },
+            "new_locator": {
+                "provision": "Article 27",
+                "paragraph": "4",
+                "point": None,
+                "subparagraph": None,
+            },
+        },
+        "obligations": [{
+            "obligation_id": "ai-act-art27-fria-review",
+            "source_id": "eu-ai-act",
+            "locator": {
+                "provision": "Article 27",
+                "paragraph": "1",
+                "point": None,
+                "subparagraph": None,
+            },
+            "actor": "deployer",
+            "action": "perform",
+            "object": "fundamental rights impact assessment",
+            "modality": "must",
+            "condition": "where the Article 27 scope conditions are satisfied",
+        }],
+        "mappings": [{
+            "obligation_id": "ai-act-art27-fria-review",
+            "control_id": "ctrl-fria-01",
+            "rationale": "Reviewed workflow mapping.",
+            "reviewed": True,
+        }],
+        "controls": [{
+            "control_id": "ctrl-fria-01",
+            "obligation_id": "ai-act-art27-fria-review",
+            "title": "Perform and document FRIA",
+            "description": "Maintain a documented FRIA workflow.",
+            "control_type": "assessment",
+            "owner_role": "AI governance",
+            "implementation_status": "not_assessed",
+            "source": "reviewed mapping",
+        }],
+        "evidence": {
+            "requirements": [
+                {
+                    "requirement_id": "evreq-fria-record",
+                    "control_id": "ctrl-fria-01",
+                    "title": "Documented FRIA record",
+                    "description": "Retained FRIA documentation.",
+                    "evidence_type": "document",
+                    "mandatory": True,
+                },
+                {
+                    "requirement_id": "evreq-mitigation-record",
+                    "control_id": "ctrl-fria-01",
+                    "title": "Mitigation record",
+                    "description": "Mitigation documentation.",
+                    "evidence_type": "document",
+                    "mandatory": True,
+                },
+            ],
+            "records": [{
+                "evidence_id": "ev-fria-001",
+                "requirement_id": "evreq-fria-record",
+                "title": "FRIA record",
+                "evidence_type": "document",
+                "source_uri": "https://example.org/internal/fria-001",
+                "sha256": "a" * 64,
+                "collected_at": "2026-09-29T20:00:00+02:00",
+                "owner_role": "AI governance",
+            }],
+        },
+    }
+
+
+def test_workflow_evaluate_exposes_existing_domain_pipeline():
+    response = client.post("/workflow/evaluate", json=_workflow_payload())
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["summary"] == {
+        "evidence_gap_count": 1,
+        "regulatory_impact_count": 1,
+        "route_count": 2,
+        "human_review_count": 2,
+        "log_only_count": 0,
+    }
+    assert body["evidence_gaps"][0]["requirement_id"] == "evreq-mitigation-record"
+    assert body["regulatory_impacts"][0]["control_id"] == "ctrl-fria-01"
+    assert {item["reviewer_role"] for item in body["review_routes"]} == {
+        "AI governance",
+        "Legal",
+    }
+    assert body["compliance_determination_produced"] is False
+    assert response.headers["x-request-id"]
+
+
+def test_workflow_evaluate_is_deterministic_for_same_payload():
+    payload = _workflow_payload()
+
+    first = client.post("/workflow/evaluate", json=payload)
+    second = client.post("/workflow/evaluate", json=payload)
+
+    assert first.status_code == 200 and second.status_code == 200
+    assert first.json() == second.json()
+    assert first.headers["x-request-id"] != second.headers["x-request-id"]
+
+
+def test_workflow_evaluate_rejects_inconsistent_mapping_as_bad_request():
+    payload = _workflow_payload()
+    payload["controls"][0]["obligation_id"] = "other-obligation"
+
+    response = client.post("/workflow/evaluate", json=payload)
+
+    assert response.status_code == 400
+    assert "obligation does not match mapping" in response.json()["detail"]
+
+
+def test_workflow_demo_endpoint_is_offline_and_non_compliance():
+    response = client.get("/workflow/demo")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["route_count"] == 3
+    assert body["human_review_count"] == 2
+    assert body["log_only_count"] == 1
+    assert body["benchmark"]["routing_accuracy"] == 1.0
+    assert body["compliance_determination_produced"] is False
