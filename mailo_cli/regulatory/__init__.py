@@ -7,6 +7,7 @@ canonical MAILO ontology and does not make legal-compliance determinations.
 
 from .diff import ProvisionUnit, StructuralChangeCandidate, diff_provisions, normalise_text, text_sha256
 from .io import load_change_set
+from .impact import ImpactLinkStatus, ObligationImpactCandidate, link_change_to_obligations
 from .reconcile import ReconciledChange, ReconciliationStatus, reconcile_candidates
 from .obligations import (
     ApplicabilityAssessment,
@@ -26,6 +27,9 @@ from .models import (
 )
 
 __all__ = [
+    "ImpactLinkStatus",
+    "ObligationImpactCandidate",
+    "link_change_to_obligations",
     "ApplicabilityAssessment",
     "ApplicabilityStatus",
     "Obligation",
