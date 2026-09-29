@@ -102,8 +102,10 @@ and escalation. Optional evidence gaps may remain log-only. The review layer doe
 not expose AI approval/compliance verdicts and UNKNOWN cannot close a review.
 
 ### v0.4.4 — workflow evaluation and end-to-end scenario
-Evaluate mapping completeness, evidence-gap handling, review routing, and audit
-traceability on a fixed reviewed scenario.
+Close the v0.4.x line with a deterministic fixed FRIA scenario, routing and
+traceability benchmarks, audit/escalation integrity checks, UNKNOWN-safety
+checks, and explicitly labelled workflow-burden proxies. These proxies are not
+human cognitive-load measurements.
 
 ## Design principle
 
