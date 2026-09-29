@@ -67,6 +67,13 @@ from .review import (
     create_review_trail,
     route_review_candidate,
 )
+from .workflow_benchmark import (
+    WorkflowBenchmarkReport,
+    WorkflowGold,
+    WorkflowRouteGold,
+    benchmark_workflow,
+)
+from .workflow_demo import WorkflowDemoResult, run_fixed_workflow_scenario
 from .workflow_impact import (
     EvidenceGapCandidate,
     EvidenceGapStatus,
@@ -125,9 +132,14 @@ __all__ = [
     "SourceLocator",
     "StructuralChangeCandidate",
     "SystemDescription",
+    "WorkflowBenchmarkReport",
+    "WorkflowDemoResult",
+    "WorkflowGold",
+    "WorkflowRouteGold",
     "assess_applicability",
     "benchmark_applicability",
     "benchmark_changes",
+    "benchmark_workflow",
     "create_review_trail",
     "diff_provisions",
     "find_evidence_gaps",
@@ -137,6 +149,7 @@ __all__ = [
     "normalise_text",
     "propagate_regulatory_change",
     "route_review_candidate",
+    "run_fixed_workflow_scenario",
     "reconcile_candidates",
     "text_sha256",
 ]
