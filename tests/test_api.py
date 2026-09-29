@@ -4,6 +4,7 @@ import json
 from fastapi.testclient import TestClient
 
 import mailo_cli.api as api
+from mailo_cli.regulatory.persistence import SQLiteWorkflowRepository
 from mailo_cli.shape_registry import ShapeRegistry
 from mailo_cli.settings import ApiSettings, load_api_settings
 
@@ -289,3 +290,162 @@ def test_workflow_demo_endpoint_is_offline_and_non_compliance():
     assert body["log_only_count"] == 1
     assert body["benchmark"]["routing_accuracy"] == 1.0
     assert body["compliance_determination_produced"] is False
+
+
+
+def test_durable_workflow_run_is_idempotent(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+    payload = _workflow_payload()
+
+    first = client.post(
+        "/workflow/runs",
+        json=payload,
+        headers={"Idempotency-Key": "fria-run-001"},
+    )
+    second = client.post(
+        "/workflow/runs",
+        json=payload,
+        headers={"Idempotency-Key": "fria-run-001"},
+    )
+
+    assert first.status_code == 201, first.text
+    assert second.status_code == 200, second.text
+    assert first.json()["run_id"] == second.json()["run_id"]
+    assert first.json()["created"] is True
+    assert second.json()["created"] is False
+    assert len(first.json()["review_cases"]) == 2
+    assert len(first.json()["audit_events"]) == 2
+
+
+def test_durable_workflow_run_rejects_idempotency_key_reuse(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    first = client.post(
+        "/workflow/runs",
+        json=_workflow_payload(),
+        headers={"Idempotency-Key": "fria-run-conflict"},
+    )
+    changed = _workflow_payload()
+    changed["change"]["summary"] = "Different request body."
+    second = client.post(
+        "/workflow/runs",
+        json=changed,
+        headers={"Idempotency-Key": "fria-run-conflict"},
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 409
+    assert "different request" in second.json()["detail"]
+
+
+def test_durable_workflow_run_can_be_retrieved(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    created = client.post(
+        "/workflow/runs",
+        json=_workflow_payload(),
+        headers={"Idempotency-Key": "fria-run-get"},
+    )
+    run_id = created.json()["run_id"]
+
+    fetched = client.get(f"/workflow/runs/{run_id}")
+
+    assert fetched.status_code == 200
+    assert fetched.json()["run_id"] == run_id
+    assert fetched.json()["created"] is False
+    assert fetched.json()["request_sha256"] == created.json()["request_sha256"]
+
+
+def test_missing_durable_workflow_run_returns_404(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    response = client.get("/workflow/runs/wf-does-not-exist")
+
+    assert response.status_code == 404
+
+
+def test_human_yes_response_resolves_persisted_review(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+    created = client.post(
+        "/workflow/runs",
+        json=_workflow_payload(),
+        headers={"Idempotency-Key": "fria-human-yes"},
+    )
+    review = next(
+        item
+        for item in created.json()["review_cases"]
+        if item["subject_type"] == "evidence_gap"
+    )
+
+    response = client.post(
+        f"/workflow/reviews/{review['review_id']}/responses",
+        json={
+            "response_id": "resp-evidence-001",
+            "answer": "yes",
+            "reviewer_role": "AI governance",
+            "rationale": "The artefact exists in a separate controlled repository.",
+            "responded_at": "2026-09-29T22:30:00+02:00",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["review_case"]["status"] == "resolved"
+    assert [item["event_type"] for item in body["audit_events"]] == [
+        "review_created",
+        "response_recorded",
+        "review_closed",
+    ]
+
+
+def test_unknown_response_requires_and_persists_escalation(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+    created = client.post(
+        "/workflow/runs",
+        json=_workflow_payload(),
+        headers={"Idempotency-Key": "fria-human-unknown"},
+    )
+    review = next(
+        item
+        for item in created.json()["review_cases"]
+        if item["subject_type"] == "regulatory_impact"
+    )
+
+    invalid = client.post(
+        f"/workflow/reviews/{review['review_id']}/responses",
+        json={
+            "response_id": "resp-impact-invalid",
+            "answer": "unknown",
+            "reviewer_role": "Legal",
+            "rationale": "Interpretive effect remains unresolved.",
+            "responded_at": "2026-09-29T22:30:00+02:00",
+        },
+    )
+    assert invalid.status_code == 400
+    assert "escalation_target" in invalid.json()["detail"]
+
+    valid = client.post(
+        f"/workflow/reviews/{review['review_id']}/responses",
+        json={
+            "response_id": "resp-impact-001",
+            "answer": "unknown",
+            "reviewer_role": "Legal",
+            "rationale": "Interpretive effect remains unresolved.",
+            "responded_at": "2026-09-29T22:31:00+02:00",
+            "escalation_target": "Senior Legal",
+        },
+    )
+
+    assert valid.status_code == 200, valid.text
+    assert valid.json()["review_case"]["status"] == "escalated"
+    assert [item["event_type"] for item in valid.json()["audit_events"]] == [
+        "review_created",
+        "response_recorded",
+        "escalated",
+    ]
