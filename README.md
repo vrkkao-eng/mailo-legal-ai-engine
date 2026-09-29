@@ -81,19 +81,19 @@ flowchart TD
 
 The finding graph and system-description validation are deliberately separate inputs. The engine does **not** turn LLM output into an automatic legal-compliance conclusion.
 
-## RegAI v0.5.1
+## RegAI v0.5.2
 
 v0.2.x established version-aware regulatory change intelligence and reviewed change benchmarking. v0.3.x added reviewed obligation models, deterministic factual applicability gates, explicit `REVIEW_REQUIRED` abstention, and applicability benchmarking. v0.4.0 introduced reviewed obligation-to-control mappings; v0.4.1 added evidence requirements/records; v0.4.2 added evidence-gap and regulatory-impact candidates; v0.4.3 added selective focused human review and audit trails; v0.4.4 closes the workflow line with a deterministic fixed FRIA scenario and workflow benchmark.
 
-The completed v0.4.x line remains the domain-workflow foundation. v0.5.0 exposed that workflow through typed HTTP schemas and a stateless application service. v0.5.1 adds SQLite transactional persistence for durable workflow runs, evidence metadata, focused review cases, human responses, escalations, and audit events. Durable creation uses an idempotency key to prevent duplicate review work on retries.
+The completed v0.4.x line remains the domain-workflow foundation. v0.5.0 exposed that workflow through typed HTTP schemas and a stateless application service. v0.5.1 added SQLite transactional persistence. v0.5.2 adds inspectable workflow execution: durable runs are reserved before evaluation, ordered step events record evaluation/persistence/review-ready timing, and failed runs expose stable error codes, retryability, and the workflow run ID needed for diagnosis.
 
-See [RegAI roadmap](docs/regai-roadmap.md), [Compliance workflow](docs/compliance-workflow.md), [Evidence workflow](docs/evidence-workflow.md), [Workflow impact](docs/workflow-impact.md), [Focused human review](docs/human-review.md), [Workflow evaluation](docs/workflow-evaluation.md), [Workflow API](docs/workflow-api.md), [Workflow persistence](docs/workflow-persistence.md), and [Architecture boundaries](docs/architecture-boundaries.md).
+See [RegAI roadmap](docs/regai-roadmap.md), [Compliance workflow](docs/compliance-workflow.md), [Evidence workflow](docs/evidence-workflow.md), [Workflow impact](docs/workflow-impact.md), [Focused human review](docs/human-review.md), [Workflow evaluation](docs/workflow-evaluation.md), [Workflow API](docs/workflow-api.md), [Workflow persistence](docs/workflow-persistence.md), [Workflow observability](docs/workflow-observability.md), and [Architecture boundaries](docs/architecture-boundaries.md).
 
 ## Implemented now vs next engineering increment
 
 | Implemented now | Next engineering increment |
 | --- | --- |
-| Python package + CLI | Observability and failure semantics (v0.5.2) |
+| Python package + CLI | Operational evaluation (v0.5.3) |
 | FastAPI service layer for offline graph, demo-shape validation, and reviewed SPARQL | Deployment and observability |
 | RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
@@ -301,7 +301,7 @@ Each validation report records SHA-256 hashes of the input instance and shapes f
 | [Mailo-ontology](https://github.com/vrkkao-eng/Mailo-ontology) | Canonical RDF/OWL model, substantive SHACL shapes, legal-source annotations, releases; CC BY 4.0 |
 | **mailo-legal-ai-engine** | CLI, optional research tool loop, input mapping, graph export, validation reports, SPARQL execution, tests; MIT |
 
-The engine versioning is independent of the private CLI and ontology release numbering; **v0.5.1** adds transactional operational persistence and idempotent durable workflow creation after the completed v0.2.x change-intelligence and v0.3.x applicability increments. Ontology files remain external and retain their own licence. No private Git history was copied.
+The engine versioning is independent of the private CLI and ontology release numbering; **v0.5.2** adds application-level workflow observability, step timing, and inspectable failure semantics after the completed v0.2.x change-intelligence and v0.3.x applicability increments. Ontology files remain external and retain their own licence. No private Git history was copied.
 
 ## Limitations
 
