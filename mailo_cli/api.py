@@ -368,7 +368,15 @@ def get_workflow_run(run_id: str) -> WorkflowRunResponse:
             status=persisted.status,
             created_at=persisted.created_at.isoformat(),
             created=False,
+            failed_step=persisted.failed_step,
+            error_code=persisted.error_code,
+            retryable=persisted.retryable,
+            error_detail=persisted.error_detail,
             result=persisted.result_payload,
+            steps=[
+                WorkflowStepResponse.model_validate(item)
+                for item in repository.list_steps(persisted.run_id)
+            ],
             review_cases=[
                 PersistedReviewCaseResponse.model_validate(item)
                 for item in repository.list_review_cases(persisted.run_id)
