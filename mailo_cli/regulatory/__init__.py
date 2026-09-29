@@ -49,6 +49,13 @@ from .obligations import (
     ObligationModality,
     SystemDescription,
 )
+from .execution import WorkflowExecutionError, execute_durable_workflow
+from .observability import (
+    WorkflowErrorCode,
+    WorkflowStep,
+    WorkflowStepEvent,
+    WorkflowStepStatus,
+)
 from .persistence import (
     IdempotencyConflict,
     PersistedWorkflowRun,
@@ -143,7 +150,12 @@ __all__ = [
     "SQLiteWorkflowRepository",
     "SystemDescription",
     "WorkflowBenchmarkReport",
+    "WorkflowErrorCode",
+    "WorkflowExecutionError",
     "WorkflowRunNotFound",
+    "WorkflowStep",
+    "WorkflowStepEvent",
+    "WorkflowStepStatus",
     "WorkflowDemoResult",
     "WorkflowEvaluationResult",
     "WorkflowGold",
@@ -154,6 +166,7 @@ __all__ = [
     "benchmark_workflow",
     "create_review_trail",
     "evaluate_workflow",
+    "execute_durable_workflow",
     "diff_provisions",
     "find_evidence_gaps",
     "link_change_to_obligations",
