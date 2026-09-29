@@ -180,3 +180,25 @@ def test_propagation_rejects_inconsistent_mapping():
         assert "obligation does not match mapping" in str(exc)
     else:
         raise AssertionError("expected inconsistent mapping to be rejected")
+
+
+def test_repo_fixtures_share_ai_act_identity_for_propagation():
+    changes = json.loads(
+        (ROOT / "examples" / "regulatory" / "ai_act_2026_1744_changes.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    obligations = json.loads(
+        (ROOT / "examples" / "regulatory" / "obligations_seed.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    article27_change = next(
+        item for item in changes["changes"]
+        if item["change_id"] == "ai-act-2026-art-27-4-changed"
+    )
+    fria_obligation = obligations["obligations"][0]
+
+    assert article27_change["source_id"] == "eu-ai-act"
+    assert fria_obligation["source_id"] == article27_change["source_id"]
