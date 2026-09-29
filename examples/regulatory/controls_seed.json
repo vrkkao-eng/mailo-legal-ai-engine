@@ -1,0 +1,24 @@
+{
+  "fixture_id": "v0.4.0-control-seed",
+  "description": "Reviewed application-layer control mapping for workflow tests. It is not a legal-compliance determination.",
+  "controls": [
+    {
+      "control_id": "ctrl-fria-01",
+      "obligation_id": "ai-act-art27-fria-review",
+      "title": "Perform and document FRIA",
+      "description": "Maintain a documented assessment workflow for the reviewed FRIA obligation when applicable.",
+      "control_type": "assessment",
+      "owner_role": "AI governance",
+      "implementation_status": "not_assessed",
+      "source": "reviewed mapping"
+    }
+  ],
+  "mappings": [
+    {
+      "obligation_id": "ai-act-art27-fria-review",
+      "control_id": "ctrl-fria-01",
+      "rationale": "Reviewed seed mapping used to exercise the operational control contract.",
+      "reviewed": true
+    }
+  ]
+}

@@ -76,6 +76,29 @@ Evaluate supported factual gates against system descriptions. Missing or interpr
 ### v0.3.3 — obligation/applicability evaluation
 Benchmark candidate extraction, supported applicability decisions, abstention appropriateness, and provenance completeness.
 
+## v0.4.x planned increments
+
+### v0.4.0 — reviewed obligation-to-control contracts
+Introduce organisation-owned `Control` records and reviewed
+`ObligationControlMapping` links. Control implementation state is operational
+workflow data and is not a legal-compliance verdict.
+
+### v0.4.1 — control evidence requirements
+Represent evidence requirements and evidence records without treating document
+presence as proof of compliance.
+
+### v0.4.2 — gap and regulatory-impact analysis
+Propagate reviewed obligation/control relationships into evidence-gap and
+regulatory-change review candidates.
+
+### v0.4.3 — human review and audit trail
+Add explicit review decisions, reasons, timestamps, and escalation state while
+keeping machine suggestions separate from human determinations.
+
+### v0.4.4 — workflow evaluation and end-to-end scenario
+Evaluate mapping completeness, evidence-gap handling, review routing, and audit
+traceability on a fixed reviewed scenario.
+
 ## Design principle
 
 A regulatory change record means that a selected text changed between two
