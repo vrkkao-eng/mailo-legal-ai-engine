@@ -1,0 +1,55 @@
+{
+  "fixture_id": "v0.4.1-evidence-seed",
+  "description": "Reviewed application-layer evidence expectations and supplied artefacts for workflow tests. Presence of a record is not a sufficiency or compliance determination.",
+  "requirements": [
+    {
+      "requirement_id": "evreq-fria-record",
+      "control_id": "ctrl-fria-01",
+      "title": "Documented FRIA record",
+      "description": "Retained documentation showing that the organisation executed its reviewed FRIA control workflow.",
+      "evidence_type": "document",
+      "mandatory": true,
+      "source": "reviewed control design"
+    },
+    {
+      "requirement_id": "evreq-deployment-context",
+      "control_id": "ctrl-fria-01",
+      "title": "Deployment context record",
+      "description": "Structured context describing the intended deployment setting used by the reviewed control workflow.",
+      "evidence_type": "structured_data",
+      "mandatory": true,
+      "source": "reviewed control design"
+    },
+    {
+      "requirement_id": "evreq-mitigation-record",
+      "control_id": "ctrl-fria-01",
+      "title": "Mitigation record",
+      "description": "Documentation of mitigation measures recorded as part of the reviewed control workflow.",
+      "evidence_type": "document",
+      "mandatory": true,
+      "source": "reviewed control design"
+    }
+  ],
+  "records": [
+    {
+      "evidence_id": "ev-fria-2026-001",
+      "requirement_id": "evreq-fria-record",
+      "title": "FRIA assessment record",
+      "evidence_type": "document",
+      "source_uri": "https://example.org/internal/fria-2026-001",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "collected_at": "2026-09-29T20:00:00+02:00",
+      "owner_role": "AI governance"
+    },
+    {
+      "evidence_id": "ev-context-2026-001",
+      "requirement_id": "evreq-deployment-context",
+      "title": "Deployment context export",
+      "evidence_type": "structured_data",
+      "source_uri": "https://example.org/internal/context-2026-001",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "collected_at": "2026-09-29T20:05:00+02:00",
+      "owner_role": "AI governance"
+    }
+  ]
+}
