@@ -14,6 +14,7 @@ from typing import Any, Iterable
 from .evidence import EvidenceRecord
 from .review import ReviewDisposition
 from .service import WorkflowEvaluationResult
+from .observability import WorkflowErrorCode, WorkflowStepEvent
 
 
 class IdempotencyConflict(ValueError):
@@ -88,7 +89,24 @@ class SQLiteWorkflowRepository:
                     status TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     request_json TEXT NOT NULL,
-                    result_json TEXT NOT NULL
+                    result_json TEXT NOT NULL,
+                    failed_step TEXT,
+                    error_code TEXT,
+                    retryable INTEGER,
+                    error_detail TEXT
+                );
+
+                CREATE TABLE IF NOT EXISTS workflow_steps (
+                    run_id TEXT NOT NULL,
+                    step_sequence INTEGER NOT NULL,
+                    step TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    duration_ms REAL NOT NULL,
+                    detail TEXT NOT NULL,
+                    error_code TEXT,
+                    retryable INTEGER,
+                    PRIMARY KEY (run_id, step_sequence),
+                    FOREIGN KEY (run_id) REFERENCES workflow_runs(run_id) ON DELETE CASCADE
                 );
 
                 CREATE TABLE IF NOT EXISTS evidence_records (
@@ -148,6 +166,262 @@ class SQLiteWorkflowRepository:
                 );
                 """
             )
+
+    def reserve_run(
+        self,
+        *,
+        idempotency_key: str,
+        request_payload: dict[str, Any],
+        change_id: str,
+    ) -> tuple[PersistedWorkflowRun, bool]:
+        """Reserve a durable workflow run before evaluation begins."""
+
+        key = idempotency_key.strip()
+        if not key:
+            raise ValueError("idempotency_key must not be empty")
+        if len(key) > 128:
+            raise ValueError("idempotency_key must not exceed 128 characters")
+
+        request_hash = _request_sha256(request_payload)
+        created_at = datetime.now(timezone.utc)
+        run_id = f"wf-{uuid.uuid4()}"
+
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            existing = connection.execute(
+                "SELECT * FROM workflow_runs WHERE idempotency_key = ?",
+                (key,),
+            ).fetchone()
+            if existing is not None:
+                if existing["request_sha256"] != request_hash:
+                    raise IdempotencyConflict(
+                        "idempotency key was already used with a different request"
+                    )
+                connection.rollback()
+                return self._row_to_run(existing), False
+
+            connection.execute(
+                """
+                INSERT INTO workflow_runs (
+                    run_id, idempotency_key, request_sha256, change_id, status,
+                    created_at, request_json, result_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    key,
+                    request_hash,
+                    change_id,
+                    "running",
+                    created_at.isoformat(),
+                    _canonical_json(request_payload),
+                    _canonical_json({}),
+                ),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+        return self.get_run(run_id), True
+
+    def append_step(self, run_id: str, event: WorkflowStepEvent) -> None:
+        """Append one ordered operational step event."""
+
+        self.get_run(run_id)
+        with self._connect() as connection:
+            next_sequence = connection.execute(
+                "SELECT COALESCE(MAX(step_sequence), -1) + 1 FROM workflow_steps WHERE run_id = ?",
+                (run_id,),
+            ).fetchone()[0]
+            connection.execute(
+                """
+                INSERT INTO workflow_steps (
+                    run_id, step_sequence, step, status, duration_ms, detail,
+                    error_code, retryable
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    next_sequence,
+                    event.step.value,
+                    event.status.value,
+                    event.duration_ms,
+                    event.detail,
+                    event.error_code.value if event.error_code else None,
+                    None if event.retryable is None else int(event.retryable),
+                ),
+            )
+
+    def list_steps(self, run_id: str) -> tuple[dict[str, Any], ...]:
+        self.get_run(run_id)
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT step_sequence, step, status, duration_ms, detail,
+                       error_code, retryable
+                FROM workflow_steps
+                WHERE run_id = ?
+                ORDER BY step_sequence
+                """,
+                (run_id,),
+            ).fetchall()
+        return tuple(
+            {
+                "sequence": row["step_sequence"],
+                "step": row["step"],
+                "status": row["status"],
+                "duration_ms": row["duration_ms"],
+                "detail": row["detail"],
+                "error_code": row["error_code"],
+                "retryable": (
+                    None if row["retryable"] is None else bool(row["retryable"])
+                ),
+            }
+            for row in rows
+        )
+
+    def mark_failed(
+        self,
+        run_id: str,
+        *,
+        failed_step: str,
+        error_code: WorkflowErrorCode,
+        retryable: bool,
+        detail: str,
+    ) -> PersistedWorkflowRun:
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """
+                UPDATE workflow_runs
+                SET status = 'failed', failed_step = ?, error_code = ?,
+                    retryable = ?, error_detail = ?
+                WHERE run_id = ?
+                """,
+                (
+                    failed_step,
+                    error_code.value,
+                    int(retryable),
+                    detail,
+                    run_id,
+                ),
+            )
+            if cursor.rowcount != 1:
+                raise WorkflowRunNotFound(f"workflow run not found: {run_id}")
+        return self.get_run(run_id)
+
+    def finalize_run(
+        self,
+        run_id: str,
+        *,
+        result: WorkflowEvaluationResult,
+        evidence_records: Iterable[EvidenceRecord],
+    ) -> PersistedWorkflowRun:
+        """Persist evaluation output, review cases and audit events atomically."""
+
+        result_payload = result.to_dict()
+        records = tuple(evidence_records)
+        created_at = self.get_run(run_id).created_at
+
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT status FROM workflow_runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+            if row is None:
+                raise WorkflowRunNotFound(f"workflow run not found: {run_id}")
+            if row["status"] != "running":
+                raise ValueError("workflow run is not in running state")
+
+            connection.execute(
+                "UPDATE workflow_runs SET result_json = ?, status = 'completed' WHERE run_id = ?",
+                (_canonical_json(result_payload), run_id),
+            )
+
+            for record in records:
+                connection.execute(
+                    """
+                    INSERT INTO evidence_records (
+                        run_id, evidence_id, requirement_id, evidence_type,
+                        source_uri, sha256, collected_at, owner_role
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        run_id,
+                        record.evidence_id,
+                        record.requirement_id,
+                        record.evidence_type.value,
+                        record.source_uri,
+                        record.sha256,
+                        record.collected_at.isoformat(),
+                        record.owner_role,
+                    ),
+                )
+
+            for route in result.review_routes:
+                if route.disposition is not ReviewDisposition.HUMAN_REVIEW:
+                    continue
+                if route.question is None or route.reviewer_role is None:
+                    raise ValueError("human review route is missing question or reviewer role")
+                review_id = _review_id(run_id, route.subject_id)
+                question_json = _canonical_json(
+                    {
+                        "question_id": route.question.question_id,
+                        "prompt": route.question.prompt,
+                        "permitted_answers": [
+                            answer.value for answer in route.question.permitted_answers
+                        ],
+                        "context_refs": list(route.question.context_refs),
+                    }
+                )
+                connection.execute(
+                    """
+                    INSERT INTO review_cases (
+                        review_id, run_id, subject_type, subject_id, reviewer_role,
+                        status, question_json, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        review_id,
+                        run_id,
+                        route.subject_type.value,
+                        route.subject_id,
+                        route.reviewer_role,
+                        "open",
+                        question_json,
+                        created_at.isoformat(),
+                    ),
+                )
+                connection.execute(
+                    """
+                    INSERT INTO audit_events (
+                        event_id, review_id, event_sequence, event_type,
+                        actor_role, occurred_at, detail
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        f"evt:{review_id}:created",
+                        review_id,
+                        0,
+                        "review_created",
+                        "system",
+                        created_at.isoformat(),
+                        "Durable review case created from workflow evaluation.",
+                    ),
+                )
+
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+        return self.get_run(run_id)
 
     def create_run(
         self,
