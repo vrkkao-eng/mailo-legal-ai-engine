@@ -121,9 +121,10 @@ def evaluate_workflow(
         controls=control_items,
         evidence=evidence,
     )
-    routes = tuple(
-        route_review_candidate(candidate) for candidate in (*gaps, *impacts)
-    )
+    candidates: tuple[
+        EvidenceGapCandidate | RegulatoryImpactCandidate, ...
+    ] = (*gaps, *impacts)
+    routes = tuple(route_review_candidate(candidate) for candidate in candidates)
 
     return WorkflowEvaluationResult(
         evidence_gaps=gaps,

@@ -1,85 +1,84 @@
 # MAILO Legal AI Engine
 
-**Traceable RegAI application layer: versioned regulatory sources + structured findings → RDF/JSON-LD → SPARQL → SHACL validation.**
+**Auditable RegAI workflow engine: regulatory change → controls and evidence → focused human review → durable audit trace.**
 
 [![tests](https://github.com/vrkkao-eng/mailo-legal-ai-engine/actions/workflows/tests.yml/badge.svg)](https://github.com/vrkkao-eng/mailo-legal-ai-engine/actions/workflows/tests.yml)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![License MIT](https://img.shields.io/badge/License-MIT-green)
-![Status Research Prototype](https://img.shields.io/badge/Status-Research%20Prototype-orange)
+![Status Engineering Prototype](https://img.shields.io/badge/Status-Engineering%20Prototype-orange)
 
-MAILO Legal AI Engine is a Python application layer for inspectable regulatory-AI workflows. The public RegAI line now covers version-aware regulatory change intelligence, reviewed obligation/applicability contracts, organisation-owned control mappings, evidence requirements/records, evidence-gap/regulatory-impact candidates, focused human review with audit trails, deterministic workflow evaluation, a typed workflow API, and v0.5.1 transactional workflow persistence, while retaining the existing RDF/JSON-LD, reviewed SPARQL, SHACL, API, retrieval-baseline, testing, and reproducibility layers. An optional constrained LLM tool loop can structure supplied source material; it is not used to determine regulatory changes, applicability, controls, or legal compliance.
+MAILO Legal AI Engine is an engineering prototype for regulated-AI workflows. It turns reviewed regulatory change data into traceable obligation/control/evidence workflows, routes unresolved issues to focused human review, persists operational state transactionally, records inspectable failure semantics, and exposes both typed APIs and a minimal operator surface.
 
-The public engine was extracted and refactored from MAILO thesis tooling. The canonical ontology and substantive legal constraints remain in the separate [MAILO ontology repository](https://github.com/vrkkao-eng/Mailo-ontology).
+The core workflow is deliberately inspectable: deterministic logic handles change propagation, supported applicability gates, evidence gaps, routing, idempotency, audit events, and operational evaluation. An optional constrained LLM tool loop can structure supplied source material, but it is not allowed to silently decide regulatory changes, applicability, controls, or legal compliance.
+
+The canonical ontology and substantive legal constraints remain in the separate [MAILO ontology repository](https://github.com/vrkkao-eng/Mailo-ontology); this repository owns the application and workflow layer.
 
 ## What this project demonstrates
 
 | Area | Demonstrated evidence |
 | --- | --- |
-| **Python application engineering** | Packaged CLI, explicit exit codes, input validation, error handling, wheel build |
-| **Knowledge engineering** | RDF/JSON-LD export, canonical MAILO namespace, reviewed SPARQL queries |
-| **AI integration** | Optional Anthropic-backed tool loop with constrained source handling |
-| **Validation** | RDFLib instance building, pySHACL execution, complete result retention, input/shape SHA-256 hashes |
-| **Testing** | pytest regression coverage, mocked model interactions, network isolation |
-| **CI** | GitHub Actions across Python 3.11–3.13, package build, clean-environment wheel smoke test |
-| **Research transparency** | Explicit separation between legal source material, modelling choices, executable constraints, and system outputs |
-| **Regulatory change modelling** | Version-aware sources, validity intervals, provision locators, typed changes, reviewed reconciliation, and benchmark fixtures |
-| **RegAI workflow contracts** | Reviewed obligation/applicability, control, and evidence contracts with explicit provenance and non-compliance-verdict boundaries |
+| **RegAI workflow engineering** | Regulatory change → obligation/applicability → control → evidence → impact/gap → focused human review → audit trail |
+| **Backend/API engineering** | FastAPI, typed Pydantic transport schemas, application/domain separation, request IDs, explicit error semantics |
+| **Transactional reliability** | SQLite transactions, durable workflow IDs, idempotency keys, forward schema migration, persisted review/audit state |
+| **Operational maturity** | Ordered workflow-step events, timing, retryability, stable failure taxonomy, inspectable failed runs |
+| **Evaluation** | Deterministic workflow benchmark plus persisted completion/failure, latency and replay-consistency reporting |
+| **Operator experience** | Local read-only Regulatory Changes, Review Queue and Case Trace views |
+| **CI / packaging** | Python 3.11–3.13 matrix, wheel clean-install smoke test, Docker/Compose health checks, lint/type/coverage quality gate |
+| **Knowledge engineering** | RDF/JSON-LD export, reviewed SPARQL, SHACL validation, external canonical MAILO ontology boundary |
+| **AI integration** | Optional constrained Anthropic-backed structuring loop; deterministic workflow logic remains inspectable and testable |
 
-## 60-second offline demo
+## 60-second operator demo
 
 No API key is required.
 
 ```bash
 git clone https://github.com/vrkkao-eng/mailo-legal-ai-engine.git
 cd mailo-legal-ai-engine
-
-python -m venv .venv
-# macOS/Linux
-source .venv/bin/activate
-# Windows PowerShell: .\.venv\Scripts\Activate.ps1
-
-python -m pip install -e ".[dev]"
-mailo demo --output artifacts/demo
+docker compose up --build
 ```
 
-The demo creates structured graph output and SHACL validation reports from synthetic inputs. It is designed to show the engineering path without relying on live providers or private research material.
+Open `http://localhost:8000/operator` for the local operator surface or `http://localhost:8000/docs` for the typed API.
 
-Try the individual commands:
+The operator surface is intentionally small:
+
+- **Regulatory Changes** — durable runs grouped by reviewed regulatory change;
+- **Review Queue** — focused human-review work with role and escalation state;
+- **Case Trace** — workflow steps, review cases, audit events and failure metadata.
+
+For a terminal-only deterministic workflow demo:
 
 ```bash
-mailo graph \
-  --input mailo_cli/resources/findings.json \
-  --output artifacts/graph
-
-mailo validate \
-  --instance mailo_cli/resources/system.json \
-  --shapes mailo_cli/resources/demo-shapes.ttl \
-  --output artifacts/validation
+python -m pip install -e ".[dev]"
+mailo workflow-demo
 ```
+
+The older RDF/SHACL demo remains available through `mailo demo`, `mailo graph`, `mailo validate`, and `mailo sparql`.
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    A[Supplied research text + source URLs] --> B[Optional constrained LLM tool loop]
-    B --> C[Structured findings + source checks]
-    A -->|Already structured / offline example| C
+    S[Reviewed regulatory source/version] --> C[Regulatory change]
+    C --> O[Obligation + applicability]
+    O --> K[Organisation control]
+    K --> E[Evidence requirements + records]
 
-    C --> D[RDF / JSON-LD export]
-    D --> E[SPARQL queries]
+    E --> G[Evidence gap candidates]
+    C --> I[Regulatory impact candidates]
+    G --> R[Focused review routing]
+    I --> R
 
-    F[System-description JSON] --> G[RDFLib instance builder]
-    H[Explicit SHACL shapes] --> I[pySHACL validation]
-    G --> I
+    R --> H[Human YES / NO / UNKNOWN]
+    H --> A[Audit trail / escalation]
+    A --> P[Transactional workflow persistence]
+    P --> X[Operational evaluation]
+    P --> U[Operator surface]
 
-    I --> J[Result graph + JSON + Markdown reports]
-    J --> K[Input + shape hashes]
-
-    L[External MAILO ontology release] --> E
-    L -. substantive shapes supplied separately .-> H
+    M[External MAILO ontology / SHACL release] -. legal knowledge .-> O
+    M -. validation profile .-> K
 ```
 
-The finding graph and system-description validation are deliberately separate inputs. The engine does **not** turn LLM output into an automatic legal-compliance conclusion.
+The application keeps canonical legal knowledge separate from operational state. Review status, evidence-upload state, workflow timestamps, API metadata and audit events remain in the application layer rather than being pushed into the ontology.
 
 ## RegAI v0.5.4
 
@@ -187,8 +186,7 @@ not make its conformance result a legal conclusion.
 
 `POST /workflow/evaluate` remains stateless. Durable workflow creation is available through `POST /workflow/runs` with an `Idempotency-Key` header. SQLite storage defaults to `artifacts/workflow.db` and can be changed with `MAILO_WORKFLOW_DB`.
 
-The Docker/Compose files package the API only. They do not include Qdrant, a
-vector database, workflow persistence, authentication, rate limits, or deployment setup.
+Compose mounts a named volume at `/data` and defaults `MAILO_WORKFLOW_DB` to `/data/workflow.db`, so local workflow state survives container replacement. The container setup still does not include authentication/RBAC, external telemetry, rate limits, PostgreSQL/HA, Qdrant, or a vector database.
 
 ### API runtime controls
 
@@ -305,7 +303,7 @@ The engine versioning is independent of the private CLI and ontology release num
 
 ## Limitations
 
-This is a **research prototype**, not a production service.
+This is an **engineering prototype**, not a production service.
 
 There is currently:
 

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable
+from collections.abc import Callable, Iterable
+from typing import TypeVar
 
 from .controls import Control, ObligationControlMapping
 from .evidence import EvidenceSet
@@ -88,12 +89,19 @@ def find_evidence_gaps(evidence: EvidenceSet) -> tuple[EvidenceGapCandidate, ...
     return tuple(candidates)
 
 
-def _unique_index(items: Iterable[object], attribute: str) -> dict[str, object]:
-    result: dict[str, object] = {}
+T = TypeVar("T")
+
+
+def _unique_index(
+    items: Iterable[T],
+    key_fn: Callable[[T], str],
+    label: str,
+) -> dict[str, T]:
+    result: dict[str, T] = {}
     for item in items:
-        key = getattr(item, attribute)
+        key = key_fn(item)
         if key in result:
-            raise ValueError(f"duplicate {attribute}: {key}")
+            raise ValueError(f"duplicate {label}: {key}")
         result[key] = item
     return result
 
@@ -116,8 +124,12 @@ def propagate_regulatory_change(
     mapping_items = tuple(mappings)
     control_items = tuple(controls)
 
-    obligation_by_id = _unique_index(obligation_items, "obligation_id")
-    control_by_id = _unique_index(control_items, "control_id")
+    obligation_by_id = _unique_index(
+        obligation_items, lambda item: item.obligation_id, "obligation_id"
+    )
+    control_by_id = _unique_index(
+        control_items, lambda item: item.control_id, "control_id"
+    )
 
     mappings_by_obligation: dict[str, list[ObligationControlMapping]] = {}
     for mapping in mapping_items:

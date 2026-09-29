@@ -693,9 +693,10 @@ class SQLiteWorkflowRepository:
             raise ValueError("reviewer_role must not be empty")
         if not rationale.strip():
             raise ValueError("rationale must not be empty")
-        if answer == "unknown" and not (escalation_target or "").strip():
+        escalation_role = escalation_target.strip() if escalation_target is not None else None
+        if answer == "unknown" and not escalation_role:
             raise ValueError("UNKNOWN response requires escalation_target")
-        if answer != "unknown" and escalation_target is not None:
+        if answer != "unknown" and escalation_role is not None:
             raise ValueError("escalation_target is only valid for UNKNOWN responses")
 
         connection = self._connect()
@@ -763,7 +764,7 @@ class SQLiteWorkflowRepository:
                     (
                         f"esc:{review_id}:{response_id}",
                         review_id,
-                        escalation_target.strip(),
+                        escalation_role,
                         rationale.strip(),
                         responded_at.isoformat(),
                     ),
@@ -782,7 +783,7 @@ class SQLiteWorkflowRepository:
                         "escalated",
                         reviewer_role.strip(),
                         responded_at.isoformat(),
-                        f"Escalated to {escalation_target.strip()}.",
+                        f"Escalated to {escalation_role}.",
                     ),
                 )
             else:
