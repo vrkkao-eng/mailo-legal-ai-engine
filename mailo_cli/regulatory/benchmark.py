@@ -30,7 +30,7 @@ class ChangeBenchmarkReport:
         return asdict(self)
 
 
-def _ratio(numerator: int, denominator: int) -> float:
+def _ratio(numerator: int | float, denominator: int | float) -> float:
     return numerator / denominator if denominator else 0.0
 
 
