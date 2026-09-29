@@ -251,15 +251,24 @@ def to_domain_request(
 
 
 
+class EscalationResponse(StrictModel):
+    escalation_id: str
+    review_id: str
+    target_role: str
+    reason: str
+    escalated_at: str
+
+
 class PersistedReviewCaseResponse(StrictModel):
     review_id: str
-    run_id: str | None = None
+    run_id: str
     subject_type: str
     subject_id: str
     reviewer_role: str
     status: str
     question: dict[str, object]
     created_at: str
+    escalation: EscalationResponse | None = None
 
 
 class AuditEventResponse(StrictModel):
