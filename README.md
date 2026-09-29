@@ -1,13 +1,13 @@
 # MAILO Legal AI Engine
 
-**Python application layer for traceable legal-AI workflows: structured findings → RDF/JSON-LD → SPARQL → SHACL validation.**
+**Traceable RegAI application layer: versioned regulatory sources + structured findings → RDF/JSON-LD → SPARQL → SHACL validation.**
 
 [![tests](https://github.com/vrkkao-eng/mailo-legal-ai-engine/actions/workflows/tests.yml/badge.svg)](https://github.com/vrkkao-eng/mailo-legal-ai-engine/actions/workflows/tests.yml)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![License MIT](https://img.shields.io/badge/License-MIT-green)
 ![Status Research Prototype](https://img.shields.io/badge/Status-Research%20Prototype-orange)
 
-MAILO Legal AI Engine is a Python application layer for inspectable legal-AI workflows. It converts structured research findings into RDF/JSON-LD, executes reviewed SPARQL queries, validates structured system descriptions with SHACL, and produces reproducible reports. An optional constrained LLM tool loop can structure supplied source material.
+MAILO Legal AI Engine is a Python application layer for inspectable regulatory-AI workflows. v0.2.0 adds version-aware regulatory source and change models plus reviewed change fixtures, while retaining the existing RDF/JSON-LD, reviewed SPARQL, SHACL, API, retrieval-baseline, testing, and reproducibility layers. An optional constrained LLM tool loop can structure supplied source material; it is not used to determine regulatory changes or legal compliance.
 
 The public engine was extracted and refactored from MAILO thesis tooling. The canonical ontology and substantive legal constraints remain in the separate [MAILO ontology repository](https://github.com/vrkkao-eng/Mailo-ontology).
 
@@ -21,7 +21,7 @@ The public engine was extracted and refactored from MAILO thesis tooling. The ca
 | **Validation** | RDFLib instance building, pySHACL execution, complete result retention, input/shape SHA-256 hashes |
 | **Testing** | pytest regression coverage, mocked model interactions, network isolation |
 | **CI** | GitHub Actions across Python 3.11–3.13, package build, clean-environment wheel smoke test |
-| **Research transparency** | Explicit separation between legal source material, modelling choices, executable constraints, and system outputs |
+| **Research transparency** | Explicit separation between legal source material, modelling choices, executable constraints, and system outputs |\n| **Regulatory change modelling** | Version-aware sources, validity intervals, provision locators, typed changes, and reviewed EU AI Act amendment fixtures |
 
 ## 60-second offline demo
 
@@ -79,11 +79,11 @@ flowchart TD
 
 The finding graph and system-description validation are deliberately separate inputs. The engine does **not** turn LLM output into an automatic legal-compliance conclusion.
 
-## Implemented now vs next engineering increment
+## RegAI v0.2.0\n\nv0.2.0 introduces application-layer models for `RegulatorySource`, `RegulatoryVersion`, `Provision`, `RegulatoryChange`, `ChangeType`, `SourceLocator`, and validated `RegulatoryChangeSet` collections. The first reviewed fixture records selected changes to the AI Act made by Regulation (EU) 2026/1744. These records are test data for version/change engineering; they are not an automated legal update feed or applicability determination.\n\nSee [RegAI roadmap](docs/regai-roadmap.md) and [Architecture boundaries](docs/architecture-boundaries.md).\n\n## Implemented now vs next engineering increment
 
 | Implemented now | Next engineering increment |
 | --- | --- |
-| Python package + CLI | API authentication and request limits |
+| Python package + CLI | Deterministic article/paragraph structural diff (v0.2.1) |
 | FastAPI service layer for offline graph, demo-shape validation, and reviewed SPARQL | Deployment and observability |
 | RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
@@ -288,7 +288,7 @@ Each validation report records SHA-256 hashes of the input instance and shapes f
 | [Mailo-ontology](https://github.com/vrkkao-eng/Mailo-ontology) | Canonical RDF/OWL model, substantive SHACL shapes, legal-source annotations, releases; CC BY 4.0 |
 | **mailo-legal-ai-engine** | CLI, optional research tool loop, input mapping, graph export, validation reports, SPARQL execution, tests; MIT |
 
-The engine starts at **0.1.0** independently of the private CLI version and the ontology release numbering. Ontology files remain external and retain their own licence. No private Git history was copied.
+The engine versioning is independent of the private CLI and ontology release numbering; **v0.2.0** begins the public RegAI change-intelligence line. Ontology files remain external and retain their own licence. No private Git history was copied.
 
 ## Limitations
 
@@ -310,7 +310,7 @@ Category mappings are application conventions; they do not establish that a find
 
 ## Engineering profile and roadmap
 
-See [Engineering profile](docs/engineering-profile.md) for a concise recruiter/FDE-oriented explanation of the demonstrated capabilities, a five-minute walkthrough, and the next production-oriented increments.
+See [Engineering profile](docs/engineering-profile.md) for the recruiter/FDE-oriented engineering evidence. The RegAI evolution is documented separately in [RegAI roadmap](docs/regai-roadmap.md), with repository ownership fixed in [Architecture boundaries](docs/architecture-boundaries.md).
 
 ## Attribution
 
