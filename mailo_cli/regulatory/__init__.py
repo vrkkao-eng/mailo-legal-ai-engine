@@ -1,3 +1,4 @@
+from .controls import Control, ControlImplementationStatus, ControlType, ObligationControlMapping
 from .applicability_benchmark import ApplicabilityBenchmarkReport, ApplicabilityGold, benchmark_applicability
 from .applicability import ApplicabilityGate, GateOperator, assess_applicability
 from .benchmark import ChangeBenchmarkReport, benchmark_changes
@@ -29,6 +30,10 @@ from .models import (
 )
 
 __all__ = [
+    "Control",
+    "ControlImplementationStatus",
+    "ControlType",
+    "ObligationControlMapping",
     "ApplicabilityBenchmarkReport",
     "ApplicabilityGold",
     "benchmark_applicability",
