@@ -58,8 +58,9 @@ refine supported types such as TEXT_CHANGED to DATE_CHANGED, and never promote
 machine candidates into legal conclusions silently.
 
 ### v0.2.3 — reviewed change benchmark
-Create an adjudicated set of known changes and measure change precision,
-recall, locator accuracy, and change-type accuracy.
+Close the v0.2.x line with a named reviewed gold set and reproducible precision,
+recall, F1, locator accuracy, exact type accuracy, and reviewed type coverage.
+Seed-set scores are regression evidence only, not population-level performance.
 
 ## Design principle
 
