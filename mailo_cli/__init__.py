@@ -1,1 +1,3 @@
-"""MAILO public-safe regulatory-AI engine."""\n\n__version__ = "0.2.0"\n
+"""MAILO public-safe regulatory-AI engine."""
+
+__version__ = "0.2.0"
