@@ -138,26 +138,26 @@ def benchmark_workflow(
     expected_audit = set(gold.expected_audit_subject_ids)
     audit_complete = 0
     for subject_id in expected_audit:
-        trail = trail_by_subject.get(subject_id)
-        if trail is None:
+        audit_trail = trail_by_subject.get(subject_id)
+        if audit_trail is None:
             continue
-        has_created = bool(trail.audit_events) and (
-            trail.audit_events[0].event_type is AuditEventType.REVIEW_CREATED
+        has_created = bool(audit_trail.audit_events) and (
+            audit_trail.audit_events[0].event_type is AuditEventType.REVIEW_CREATED
         )
         has_terminal_event = (
-            trail.case.status in (ReviewStatus.OPEN, ReviewStatus.IN_REVIEW)
+            audit_trail.case.status in (ReviewStatus.OPEN, ReviewStatus.IN_REVIEW)
             or (
-                trail.case.status is ReviewStatus.RESOLVED
+                audit_trail.case.status is ReviewStatus.RESOLVED
                 and any(
                     event.event_type is AuditEventType.REVIEW_CLOSED
-                    for event in trail.audit_events
+                    for event in audit_trail.audit_events
                 )
             )
             or (
-                trail.case.status is ReviewStatus.ESCALATED
+                audit_trail.case.status is ReviewStatus.ESCALATED
                 and any(
                     event.event_type is AuditEventType.ESCALATED
-                    for event in trail.audit_events
+                    for event in audit_trail.audit_events
                 )
             )
         )
@@ -167,14 +167,14 @@ def benchmark_workflow(
     expected_escalations = set(gold.expected_escalation_subject_ids)
     escalation_integrity = 0
     for subject_id in expected_escalations:
-        trail = trail_by_subject.get(subject_id)
+        escalation_trail = trail_by_subject.get(subject_id)
         if (
-            trail is not None
-            and trail.case.status is ReviewStatus.ESCALATED
-            and trail.escalation is not None
+            escalation_trail is not None
+            and escalation_trail.case.status is ReviewStatus.ESCALATED
+            and escalation_trail.escalation is not None
             and any(
                 event.event_type is AuditEventType.ESCALATED
-                for event in trail.audit_events
+                for event in escalation_trail.audit_events
             )
         ):
             escalation_integrity += 1
