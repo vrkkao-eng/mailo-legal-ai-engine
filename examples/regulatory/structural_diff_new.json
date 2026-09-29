@@ -1,0 +1,5 @@
+[
+  {"locator":{"provision":"Article 4","paragraph":null,"point":null,"subparagraph":null},"text":"This provision is unchanged across the selected versions."},
+  {"locator":{"provision":"Article 4a","paragraph":null,"point":null,"subparagraph":null},"text":"A new provision is present in this synthetic structural fixture."},
+  {"locator":{"provision":"Article 27","paragraph":"4","point":null,"subparagraph":null},"text":"The deployer may cross-reference or include relevant information from an existing data protection impact assessment."}
+]
