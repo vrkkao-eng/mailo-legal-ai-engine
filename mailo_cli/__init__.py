@@ -1,3 +1,3 @@
-"""MAILO public-safe legal-AI engine baseline."""
+"""MAILO public-safe regulatory-AI engine."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

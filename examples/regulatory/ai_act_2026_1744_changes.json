@@ -1,0 +1,147 @@
+{
+  "sources": [
+    {
+      "source_id": "eu-ai-act",
+      "title": "Regulation (EU) 2024/1689 laying down harmonised rules on artificial intelligence",
+      "official_url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+      "celex": "32024R1689",
+      "jurisdiction": "EU"
+    },
+    {
+      "source_id": "eu-2026-1744",
+      "title": "Regulation (EU) 2026/1744 (Digital Omnibus on AI)",
+      "official_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "celex": "32026R1744",
+      "jurisdiction": "EU"
+    }
+  ],
+  "versions": [
+    {
+      "version_id": "eu-ai-act-2024-08-01",
+      "source_id": "eu-ai-act",
+      "label": "AI Act text in force before Regulation (EU) 2026/1744",
+      "effective_from": "2024-08-01",
+      "effective_to": "2026-07-27",
+      "official_url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+      "sha256": null
+    },
+    {
+      "version_id": "eu-ai-act-2026-07-27",
+      "source_id": "eu-ai-act",
+      "label": "AI Act consolidated text after Regulation (EU) 2026/1744 entered into force",
+      "effective_from": "2026-07-27",
+      "effective_to": null,
+      "official_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02024R1689-20260727",
+      "sha256": null
+    }
+  ],
+  "provisions": [],
+  "changes": [
+    {
+      "change_id": "ai-act-2026-art-4a-added",
+      "change_type": "added",
+      "source_id": "eu-ai-act",
+      "old_version_id": "eu-ai-act-2024-08-01",
+      "new_version_id": "eu-ai-act-2026-07-27",
+      "effective_date": "2026-07-27",
+      "amendment_source_id": "eu-2026-1744",
+      "amendment_locator": {
+        "provision": "Article 1",
+        "paragraph": "6",
+        "point": null,
+        "subparagraph": null
+      },
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "summary": "Article 4a on processing special categories of personal data for bias detection and correction was inserted.",
+      "old_locator": null,
+      "new_locator": {
+        "provision": "Article 4a",
+        "paragraph": null,
+        "point": null,
+        "subparagraph": null
+      }
+    },
+    {
+      "change_id": "ai-act-2026-art-10-5-deleted",
+      "change_type": "deleted",
+      "source_id": "eu-ai-act",
+      "old_version_id": "eu-ai-act-2024-08-01",
+      "new_version_id": "eu-ai-act-2026-07-27",
+      "effective_date": "2026-07-27",
+      "amendment_source_id": "eu-2026-1744",
+      "amendment_locator": {
+        "provision": "Article 1",
+        "paragraph": "9",
+        "point": "b",
+        "subparagraph": null
+      },
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "summary": "Article 10(5) was deleted as part of the restructuring associated with the new Article 4a.",
+      "old_locator": {
+        "provision": "Article 10",
+        "paragraph": "5",
+        "point": null,
+        "subparagraph": null
+      },
+      "new_locator": null
+    },
+    {
+      "change_id": "ai-act-2026-art-27-4-changed",
+      "change_type": "text_changed",
+      "source_id": "eu-ai-act",
+      "old_version_id": "eu-ai-act-2024-08-01",
+      "new_version_id": "eu-ai-act-2026-07-27",
+      "effective_date": "2026-07-27",
+      "amendment_source_id": "eu-2026-1744",
+      "amendment_locator": {
+        "provision": "Article 1",
+        "paragraph": "13",
+        "point": "a",
+        "subparagraph": null
+      },
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "summary": "Article 27(4) was replaced to permit relevant DPIA material to be cross-referenced or included in the FRIA.",
+      "old_locator": {
+        "provision": "Article 27",
+        "paragraph": "4",
+        "point": null,
+        "subparagraph": null
+      },
+      "new_locator": {
+        "provision": "Article 27",
+        "paragraph": "4",
+        "point": null,
+        "subparagraph": null
+      }
+    },
+    {
+      "change_id": "ai-act-2026-art-113-c-date-change",
+      "change_type": "date_changed",
+      "source_id": "eu-ai-act",
+      "old_version_id": "eu-ai-act-2024-08-01",
+      "new_version_id": "eu-ai-act-2026-07-27",
+      "effective_date": "2026-07-27",
+      "amendment_source_id": "eu-2026-1744",
+      "amendment_locator": {
+        "provision": "Article 1",
+        "paragraph": "40",
+        "point": "b",
+        "subparagraph": null
+      },
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "summary": "Article 113(c) was replaced with separate application dates for Article 6(2)/Annex III and Article 6(1)/Annex I high-risk systems.",
+      "old_locator": {
+        "provision": "Article 113",
+        "paragraph": null,
+        "point": "c",
+        "subparagraph": null
+      },
+      "new_locator": {
+        "provision": "Article 113",
+        "paragraph": null,
+        "point": "c",
+        "subparagraph": null
+      }
+    }
+  ]
+}
