@@ -127,6 +127,15 @@ class SQLiteWorkflowRepository:
                     FOREIGN KEY (review_id) REFERENCES review_cases(review_id) ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS escalations (
+                    escalation_id TEXT PRIMARY KEY,
+                    review_id TEXT NOT NULL UNIQUE,
+                    target_role TEXT NOT NULL,
+                    reason TEXT NOT NULL,
+                    escalated_at TEXT NOT NULL,
+                    FOREIGN KEY (review_id) REFERENCES review_cases(review_id) ON DELETE CASCADE
+                );
+
                 CREATE TABLE IF NOT EXISTS audit_events (
                     event_id TEXT PRIMARY KEY,
                     review_id TEXT NOT NULL,
@@ -312,6 +321,7 @@ class SQLiteWorkflowRepository:
                 "status": row["status"],
                 "question": json.loads(row["question_json"]),
                 "created_at": row["created_at"],
+                "escalation": self.get_escalation(row["review_id"]),
             }
             for row in rows
         )
@@ -338,7 +348,20 @@ class SQLiteWorkflowRepository:
             "status": row["status"],
             "question": json.loads(row["question_json"]),
             "created_at": row["created_at"],
+            "escalation": self.get_escalation(review_id),
         }
+
+    def get_escalation(self, review_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT escalation_id, review_id, target_role, reason, escalated_at
+                FROM escalations
+                WHERE review_id = ?
+                """,
+                (review_id,),
+            ).fetchone()
+        return dict(row) if row is not None else None
 
     def record_response(
         self,
@@ -379,6 +402,8 @@ class SQLiteWorkflowRepository:
                 raise WorkflowRunNotFound(f"review case not found: {review_id}")
             if case["status"] not in {"open", "in_review"}:
                 raise ValueError("review case is already terminal")
+            if reviewer_role.strip() != case["reviewer_role"]:
+                raise ValueError("reviewer_role does not match assigned review role")
 
             existing = connection.execute(
                 "SELECT * FROM human_responses WHERE response_id = ?",
@@ -420,6 +445,20 @@ class SQLiteWorkflowRepository:
 
             if answer == "unknown":
                 status = "escalated"
+                connection.execute(
+                    """
+                    INSERT INTO escalations (
+                        escalation_id, review_id, target_role, reason, escalated_at
+                    ) VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        f"esc:{review_id}:{response_id}",
+                        review_id,
+                        escalation_target.strip(),
+                        rationale.strip(),
+                        responded_at.isoformat(),
+                    ),
+                )
                 connection.execute(
                     """
                     INSERT INTO audit_events (
