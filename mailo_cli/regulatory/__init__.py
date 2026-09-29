@@ -17,6 +17,13 @@ from .controls import (
     ControlType,
     ObligationControlMapping,
 )
+from .evidence import (
+    EvidenceRecord,
+    EvidenceRequirement,
+    EvidenceSet,
+    EvidenceType,
+    load_evidence_set,
+)
 from .diff import (
     ProvisionUnit,
     StructuralChangeCandidate,
@@ -55,6 +62,10 @@ __all__ = [
     "Control",
     "ControlImplementationStatus",
     "ControlType",
+    "EvidenceRecord",
+    "EvidenceRequirement",
+    "EvidenceSet",
+    "EvidenceType",
     "GateOperator",
     "ImpactLinkStatus",
     "Obligation",
@@ -78,6 +89,7 @@ __all__ = [
     "diff_provisions",
     "link_change_to_obligations",
     "load_change_set",
+    "load_evidence_set",
     "normalise_text",
     "reconcile_candidates",
     "text_sha256",
