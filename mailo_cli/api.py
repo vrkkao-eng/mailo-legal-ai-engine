@@ -14,7 +14,7 @@ from typing import Any, Literal
 from fastapi import FastAPI, Header, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
+from starlette.responses import HTMLResponse, JSONResponse
 
 from mailo_cli import __version__
 from mailo_cli.pipeline import export_findings
@@ -23,7 +23,13 @@ from mailo_cli.shape_registry import ShapeRegistry
 from mailo_cli.settings import load_api_settings
 from mailo_cli.validate_cmd import build_turtle, parse_violations, run_shacl
 from mailo_cli.regulatory.execution import WorkflowExecutionError, execute_durable_workflow
+from mailo_cli.operator_ui import OPERATOR_HTML
 from mailo_cli.regulatory.operational_eval import evaluate_operations
+from mailo_cli.regulatory.operator_views import (
+    case_trace_view,
+    regulatory_changes_view,
+    review_queue_view,
+)
 from mailo_cli.regulatory.persistence import (
     IdempotencyConflict,
     SQLiteWorkflowRepository,
@@ -438,3 +444,32 @@ def workflow_operations_report() -> OperationalEvalResponse:
             evaluate_operations(_get_workflow_repository()).to_dict()
         )
     )
+
+
+
+@app.get("/operator", response_class=HTMLResponse)
+def operator_surface() -> HTMLResponse:
+    """Serve the dependency-free local operator surface."""
+
+    return HTMLResponse(OPERATOR_HTML)
+
+
+@app.get("/operator/api/changes")
+def operator_changes() -> list[dict[str, object]]:
+    """List regulatory changes represented by durable workflow runs."""
+
+    return list(regulatory_changes_view(_get_workflow_repository()))
+
+
+@app.get("/operator/api/reviews")
+def operator_reviews() -> list[dict[str, object]]:
+    """List focused human-review work items."""
+
+    return list(review_queue_view(_get_workflow_repository()))
+
+
+@app.get("/operator/api/cases/{run_id}")
+def operator_case_trace(run_id: str) -> dict[str, object]:
+    """Return an auditable operator-facing trace for one workflow run."""
+
+    return _bad_request(lambda: case_trace_view(_get_workflow_repository(), run_id))
