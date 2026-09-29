@@ -139,6 +139,7 @@ class SQLiteWorkflowRepository:
                 CREATE TABLE IF NOT EXISTS audit_events (
                     event_id TEXT PRIMARY KEY,
                     review_id TEXT NOT NULL,
+                    event_sequence INTEGER NOT NULL,
                     event_type TEXT NOT NULL,
                     actor_role TEXT NOT NULL,
                     occurred_at TEXT NOT NULL,
@@ -267,12 +268,14 @@ class SQLiteWorkflowRepository:
                 connection.execute(
                     """
                     INSERT INTO audit_events (
-                        event_id, review_id, event_type, actor_role, occurred_at, detail
-                    ) VALUES (?, ?, ?, ?, ?, ?)
+                        event_id, review_id, event_sequence, event_type,
+                        actor_role, occurred_at, detail
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         f"evt:{review_id}:created",
                         review_id,
+                        0,
                         "review_created",
                         "system",
                         created_at.isoformat(),
@@ -430,12 +433,14 @@ class SQLiteWorkflowRepository:
             connection.execute(
                 """
                 INSERT INTO audit_events (
-                    event_id, review_id, event_type, actor_role, occurred_at, detail
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    event_id, review_id, event_sequence, event_type,
+                    actor_role, occurred_at, detail
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     f"evt:{review_id}:{response_id}:response",
                     review_id,
+                    1,
                     "response_recorded",
                     reviewer_role.strip(),
                     responded_at.isoformat(),
@@ -462,12 +467,14 @@ class SQLiteWorkflowRepository:
                 connection.execute(
                     """
                     INSERT INTO audit_events (
-                        event_id, review_id, event_type, actor_role, occurred_at, detail
-                    ) VALUES (?, ?, ?, ?, ?, ?)
+                        event_id, review_id, event_sequence, event_type,
+                        actor_role, occurred_at, detail
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         f"evt:{review_id}:{response_id}:escalated",
                         review_id,
+                        2,
                         "escalated",
                         reviewer_role.strip(),
                         responded_at.isoformat(),
@@ -485,6 +492,7 @@ class SQLiteWorkflowRepository:
                     (
                         f"evt:{review_id}:{response_id}:closed",
                         review_id,
+                        2,
                         "review_closed",
                         reviewer_role.strip(),
                         responded_at.isoformat(),
@@ -515,7 +523,7 @@ class SQLiteWorkflowRepository:
                 FROM audit_events AS a
                 JOIN review_cases AS r ON r.review_id = a.review_id
                 WHERE r.run_id = ?
-                ORDER BY a.occurred_at, a.event_id
+                ORDER BY a.occurred_at, a.event_sequence, a.event_id
                 """,
                 (run_id,),
             ).fetchall()
