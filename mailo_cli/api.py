@@ -11,7 +11,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Literal
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -22,11 +22,21 @@ from mailo_cli.services import execute_packaged_query
 from mailo_cli.shape_registry import ShapeRegistry
 from mailo_cli.settings import load_api_settings
 from mailo_cli.validate_cmd import build_turtle, parse_violations, run_shacl
+from mailo_cli.regulatory.persistence import (
+    IdempotencyConflict,
+    SQLiteWorkflowRepository,
+    WorkflowRunNotFound,
+)
 from mailo_cli.regulatory.service import evaluate_workflow
 from mailo_cli.regulatory.workflow_demo import run_fixed_workflow_scenario
 from mailo_cli.workflow_api import (
+    AuditEventResponse,
+    HumanResponsePersistRequest,
+    HumanResponsePersistResponse,
+    PersistedReviewCaseResponse,
     WorkflowEvaluateRequest,
     WorkflowEvaluateResponse,
+    WorkflowRunResponse,
     to_domain_request,
 )
 
@@ -108,6 +118,16 @@ if not _LOGGER.handlers:
     _LOGGER.addHandler(_handler)
 _LOGGER.setLevel(logging.INFO)
 _LOGGER.propagate = False
+_WORKFLOW_REPOSITORY: SQLiteWorkflowRepository | None = None
+
+
+def _get_workflow_repository() -> SQLiteWorkflowRepository:
+    global _WORKFLOW_REPOSITORY
+    if _WORKFLOW_REPOSITORY is None:
+        database_path = os.getenv("MAILO_WORKFLOW_DB", "artifacts/workflow.db")
+        _WORKFLOW_REPOSITORY = SQLiteWorkflowRepository(database_path)
+    return _WORKFLOW_REPOSITORY
+
 
 if _SETTINGS.cors_origins:
     app.add_middleware(
@@ -164,6 +184,10 @@ async def harden_http(request: Request, call_next):
 def _bad_request(operation):
     try:
         return operation()
+    except WorkflowRunNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except IdempotencyConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     except (ValueError, TypeError, OSError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -261,3 +285,116 @@ def workflow_demo() -> dict[str, object]:
     """Run the deterministic offline FRIA workflow scenario."""
 
     return _bad_request(lambda: run_fixed_workflow_scenario().to_dict())
+
+
+@app.post("/workflow/runs", response_model=WorkflowRunResponse)
+def create_workflow_run(
+    request: WorkflowEvaluateRequest,
+    response: Response,
+    idempotency_key: str = Header(alias="Idempotency-Key", min_length=1, max_length=128),
+) -> WorkflowRunResponse:
+    """Evaluate and atomically persist one durable workflow run."""
+
+    def run() -> WorkflowRunResponse:
+        change, obligations, mappings, controls, evidence = to_domain_request(request)
+        result = evaluate_workflow(
+            change,
+            obligations=obligations,
+            mappings=mappings,
+            controls=controls,
+            evidence=evidence,
+        )
+        repository = _get_workflow_repository()
+        persisted, created = repository.create_run(
+            idempotency_key=idempotency_key,
+            request_payload=request.model_dump(mode="json"),
+            change_id=change.change_id,
+            result=result,
+            evidence_records=evidence.records,
+        )
+        response.status_code = 201 if created else 200
+        return WorkflowRunResponse(
+            run_id=persisted.run_id,
+            idempotency_key=persisted.idempotency_key,
+            request_sha256=persisted.request_sha256,
+            change_id=persisted.change_id,
+            status=persisted.status,
+            created_at=persisted.created_at.isoformat(),
+            created=created,
+            result=persisted.result_payload,
+            review_cases=[
+                PersistedReviewCaseResponse.model_validate(item)
+                for item in repository.list_review_cases(persisted.run_id)
+            ],
+            audit_events=[
+                AuditEventResponse.model_validate(item)
+                for item in repository.list_audit_events(persisted.run_id)
+            ],
+        )
+
+    return _bad_request(run)
+
+
+@app.get("/workflow/runs/{run_id}", response_model=WorkflowRunResponse)
+def get_workflow_run(run_id: str) -> WorkflowRunResponse:
+    """Retrieve one durable workflow run and its review/audit snapshot."""
+
+    def run() -> WorkflowRunResponse:
+        repository = _get_workflow_repository()
+        persisted = repository.get_run(run_id)
+        return WorkflowRunResponse(
+            run_id=persisted.run_id,
+            idempotency_key=persisted.idempotency_key,
+            request_sha256=persisted.request_sha256,
+            change_id=persisted.change_id,
+            status=persisted.status,
+            created_at=persisted.created_at.isoformat(),
+            created=False,
+            result=persisted.result_payload,
+            review_cases=[
+                PersistedReviewCaseResponse.model_validate(item)
+                for item in repository.list_review_cases(persisted.run_id)
+            ],
+            audit_events=[
+                AuditEventResponse.model_validate(item)
+                for item in repository.list_audit_events(persisted.run_id)
+            ],
+        )
+
+    return _bad_request(run)
+
+
+@app.post(
+    "/workflow/reviews/{review_id}/responses",
+    response_model=HumanResponsePersistResponse,
+)
+def persist_human_response(
+    review_id: str,
+    request: HumanResponsePersistRequest,
+) -> HumanResponsePersistResponse:
+    """Persist a focused human response and terminal review transition."""
+
+    def run() -> HumanResponsePersistResponse:
+        repository = _get_workflow_repository()
+        review_case = repository.record_response(
+            review_id=review_id,
+            response_id=request.response_id,
+            answer=request.answer,
+            reviewer_role=request.reviewer_role,
+            rationale=request.rationale,
+            responded_at=request.responded_at,
+            escalation_target=request.escalation_target,
+        )
+        audit_events = [
+            item
+            for item in repository.list_audit_events(review_case["run_id"])
+            if item["review_id"] == review_id
+        ]
+        return HumanResponsePersistResponse(
+            review_case=PersistedReviewCaseResponse.model_validate(review_case),
+            audit_events=[
+                AuditEventResponse.model_validate(item) for item in audit_events
+            ],
+        )
+
+    return _bad_request(run)
