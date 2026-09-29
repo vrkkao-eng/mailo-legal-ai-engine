@@ -116,7 +116,7 @@ class SparqlResponse(BaseModel):
 app = FastAPI(
     title="MAILO Legal AI Engine",
     version=__version__,
-    description="Offline graph, reviewed-query, SHACL, and stateless RegAI workflow services.",
+    description="Offline graph, reviewed-query, SHACL, and operational RegAI workflow services.",
 )
 _RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
 _SHAPE_REGISTRY = ShapeRegistry(_RESOURCE_DIR, os.getenv("MAILO_SHAPES_MANIFEST"))
