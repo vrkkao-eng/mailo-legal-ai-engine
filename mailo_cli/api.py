@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
+from mailo_cli import __version__
 from mailo_cli.pipeline import export_findings
 from mailo_cli.services import execute_packaged_query
 from mailo_cli.shape_registry import ShapeRegistry
@@ -87,7 +88,7 @@ class SparqlResponse(BaseModel):
 
 app = FastAPI(
     title="MAILO Legal AI Engine",
-    version="0.4.0",
+    version=__version__,
     description="Offline graph, reviewed-query, and SHACL-conformance workflows.",
 )
 _RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
