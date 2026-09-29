@@ -1,0 +1,19 @@
+{
+  "fixture_id": "v0.3.0-obligation-seed",
+  "description": "Reviewed application-layer examples for obligation representation. These records support schema/tests and are not automated legal extraction output.",
+  "obligations": [
+    {
+      "obligation_id": "ai-act-art27-fria-review",
+      "source_id": "eu-ai-act-2024-1689",
+      "locator": {"provision":"Article 27","paragraph":"1","point":null,"subparagraph":null},
+      "actor": "deployer",
+      "action": "perform",
+      "object": "fundamental rights impact assessment",
+      "modality": "must",
+      "condition": "where the Article 27 scope conditions are satisfied",
+      "effective_condition": "subject to the applicable legal application date",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+      "mailo_concept": "FundamentalRightsImpactAssessment"
+    }
+  ]
+}
