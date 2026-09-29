@@ -33,7 +33,12 @@ from .workflow_benchmark import (
     WorkflowRouteGold,
     benchmark_workflow,
 )
-from .workflow_impact import find_evidence_gaps, propagate_regulatory_change
+from .workflow_impact import (
+    EvidenceGapCandidate,
+    RegulatoryImpactCandidate,
+    find_evidence_gaps,
+    propagate_regulatory_change,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -286,7 +291,9 @@ def run_fixed_workflow_scenario() -> WorkflowDemoResult:
         controls=(control,),
         evidence=evidence,
     )
-    candidates = (*gaps, *impacts)
+    candidates: tuple[
+        EvidenceGapCandidate | RegulatoryImpactCandidate, ...
+    ] = (*gaps, *impacts)
     routes = tuple(route_review_candidate(candidate) for candidate in candidates)
     trails = _review_trails(routes)
 
