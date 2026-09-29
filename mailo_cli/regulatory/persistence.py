@@ -315,6 +315,156 @@ class SQLiteWorkflowRepository:
             for row in rows
         )
 
+    def get_review_case(self, review_id: str) -> dict[str, Any]:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT review_id, run_id, subject_type, subject_id, reviewer_role,
+                       status, question_json, created_at
+                FROM review_cases
+                WHERE review_id = ?
+                """,
+                (review_id,),
+            ).fetchone()
+        if row is None:
+            raise WorkflowRunNotFound(f"review case not found: {review_id}")
+        return {
+            "review_id": row["review_id"],
+            "run_id": row["run_id"],
+            "subject_type": row["subject_type"],
+            "subject_id": row["subject_id"],
+            "reviewer_role": row["reviewer_role"],
+            "status": row["status"],
+            "question": json.loads(row["question_json"]),
+            "created_at": row["created_at"],
+        }
+
+    def record_response(
+        self,
+        *,
+        review_id: str,
+        response_id: str,
+        answer: str,
+        reviewer_role: str,
+        rationale: str,
+        responded_at: datetime,
+        escalation_target: str | None = None,
+    ) -> dict[str, Any]:
+        """Persist a human response and terminal review transition atomically."""
+
+        if answer not in {"yes", "no", "unknown"}:
+            raise ValueError("answer must be yes, no, or unknown")
+        if responded_at.tzinfo is None or responded_at.utcoffset() is None:
+            raise ValueError("responded_at must include a timezone offset")
+        if not response_id.strip():
+            raise ValueError("response_id must not be empty")
+        if not reviewer_role.strip():
+            raise ValueError("reviewer_role must not be empty")
+        if not rationale.strip():
+            raise ValueError("rationale must not be empty")
+        if answer == "unknown" and not (escalation_target or "").strip():
+            raise ValueError("UNKNOWN response requires escalation_target")
+        if answer != "unknown" and escalation_target is not None:
+            raise ValueError("escalation_target is only valid for UNKNOWN responses")
+
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            case = connection.execute(
+                "SELECT * FROM review_cases WHERE review_id = ?",
+                (review_id,),
+            ).fetchone()
+            if case is None:
+                raise WorkflowRunNotFound(f"review case not found: {review_id}")
+            if case["status"] not in {"open", "in_review"}:
+                raise ValueError("review case is already terminal")
+
+            existing = connection.execute(
+                "SELECT * FROM human_responses WHERE response_id = ?",
+                (response_id,),
+            ).fetchone()
+            if existing is not None:
+                raise ValueError(f"duplicate response_id: {response_id}")
+
+            connection.execute(
+                """
+                INSERT INTO human_responses (
+                    response_id, review_id, answer, reviewer_role, rationale, responded_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    response_id,
+                    review_id,
+                    answer,
+                    reviewer_role.strip(),
+                    rationale.strip(),
+                    responded_at.isoformat(),
+                ),
+            )
+            connection.execute(
+                """
+                INSERT INTO audit_events (
+                    event_id, review_id, event_type, actor_role, occurred_at, detail
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"evt:{review_id}:{response_id}:response",
+                    review_id,
+                    "response_recorded",
+                    reviewer_role.strip(),
+                    responded_at.isoformat(),
+                    "Human response recorded.",
+                ),
+            )
+
+            if answer == "unknown":
+                status = "escalated"
+                connection.execute(
+                    """
+                    INSERT INTO audit_events (
+                        event_id, review_id, event_type, actor_role, occurred_at, detail
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        f"evt:{review_id}:{response_id}:escalated",
+                        review_id,
+                        "escalated",
+                        reviewer_role.strip(),
+                        responded_at.isoformat(),
+                        f"Escalated to {escalation_target.strip()}.",
+                    ),
+                )
+            else:
+                status = "resolved"
+                connection.execute(
+                    """
+                    INSERT INTO audit_events (
+                        event_id, review_id, event_type, actor_role, occurred_at, detail
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        f"evt:{review_id}:{response_id}:closed",
+                        review_id,
+                        "review_closed",
+                        reviewer_role.strip(),
+                        responded_at.isoformat(),
+                        "Review case closed after focused human response.",
+                    ),
+                )
+
+            connection.execute(
+                "UPDATE review_cases SET status = ? WHERE review_id = ?",
+                (status, review_id),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+        return self.get_review_case(review_id)
+
     def list_audit_events(self, run_id: str) -> tuple[dict[str, Any], ...]:
         self.get_run(run_id)
         with self._connect() as connection:
