@@ -81,19 +81,19 @@ flowchart TD
 
 The finding graph and system-description validation are deliberately separate inputs. The engine does **not** turn LLM output into an automatic legal-compliance conclusion.
 
-## RegAI v0.5.2
+## RegAI v0.5.3
 
 v0.2.x established version-aware regulatory change intelligence and reviewed change benchmarking. v0.3.x added reviewed obligation models, deterministic factual applicability gates, explicit `REVIEW_REQUIRED` abstention, and applicability benchmarking. v0.4.0 introduced reviewed obligation-to-control mappings; v0.4.1 added evidence requirements/records; v0.4.2 added evidence-gap and regulatory-impact candidates; v0.4.3 added selective focused human review and audit trails; v0.4.4 closes the workflow line with a deterministic fixed FRIA scenario and workflow benchmark.
 
-The completed v0.4.x line remains the domain-workflow foundation. v0.5.0 exposed that workflow through typed HTTP schemas and a stateless application service. v0.5.1 added SQLite transactional persistence. v0.5.2 adds inspectable workflow execution: durable runs are reserved before evaluation, ordered step events record evaluation/persistence/review-ready timing, and failed runs expose stable error codes, retryability, and the workflow run ID needed for diagnosis.
+The completed v0.4.x line remains the domain-workflow foundation. v0.5.0 exposed that workflow through typed HTTP schemas and a stateless application service. v0.5.1 added SQLite transactional persistence and v0.5.2 added inspectable workflow execution. v0.5.3 adds an operational evaluation report over persisted runs: completion/failure counts, retryability, failure-code distribution, step latency summaries, and deterministic replay consistency for identical canonical request hashes. It also adds minimal forward migration for older SQLite workflow databases.
 
-See [RegAI roadmap](docs/regai-roadmap.md), [Compliance workflow](docs/compliance-workflow.md), [Evidence workflow](docs/evidence-workflow.md), [Workflow impact](docs/workflow-impact.md), [Focused human review](docs/human-review.md), [Workflow evaluation](docs/workflow-evaluation.md), [Workflow API](docs/workflow-api.md), [Workflow persistence](docs/workflow-persistence.md), [Workflow observability](docs/workflow-observability.md), and [Architecture boundaries](docs/architecture-boundaries.md).
+See [RegAI roadmap](docs/regai-roadmap.md), [Compliance workflow](docs/compliance-workflow.md), [Evidence workflow](docs/evidence-workflow.md), [Workflow impact](docs/workflow-impact.md), [Focused human review](docs/human-review.md), [Workflow evaluation](docs/workflow-evaluation.md), [Workflow API](docs/workflow-api.md), [Workflow persistence](docs/workflow-persistence.md), [Workflow observability](docs/workflow-observability.md), [Operational evaluation](docs/operational-evaluation.md), and [Architecture boundaries](docs/architecture-boundaries.md).
 
 ## Implemented now vs next engineering increment
 
 | Implemented now | Next engineering increment |
 | --- | --- |
-| Python package + CLI | Operational evaluation (v0.5.3) |
+| Python package + CLI | Minimal operator surface (v0.5.4) |
 | FastAPI service layer for offline graph, demo-shape validation, and reviewed SPARQL | Deployment and observability |
 | RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
@@ -155,7 +155,7 @@ uvicorn mailo_cli.api:app --reload
 # or: docker compose up --build
 ```
 
-It exposes `GET /health`, `GET /ready`, `POST /graph`, `POST /validate`, `POST /sparql`, `POST /workflow/evaluate`, `GET /workflow/demo`, `POST /workflow/runs`, `GET /workflow/runs/{run_id}`, and `POST /workflow/reviews/{review_id}/responses`. Interactive request schemas are available at `/docs` when the
+It exposes `GET /health`, `GET /ready`, `POST /graph`, `POST /validate`, `POST /sparql`, `POST /workflow/evaluate`, `GET /workflow/demo`, `POST /workflow/runs`, `GET /workflow/runs/{run_id}`, `POST /workflow/reviews/{review_id}/responses`, and `GET /workflow/operations/report`. Interactive request schemas are available at `/docs` when the
 local service is running. `/validate` defaults to the packaged synthetic `demo`
 profile. It may also use an operator-registered external profile, but is not an
 endpoint for arbitrary remote or user-supplied SHACL rules. `/sparql` similarly
@@ -301,7 +301,7 @@ Each validation report records SHA-256 hashes of the input instance and shapes f
 | [Mailo-ontology](https://github.com/vrkkao-eng/Mailo-ontology) | Canonical RDF/OWL model, substantive SHACL shapes, legal-source annotations, releases; CC BY 4.0 |
 | **mailo-legal-ai-engine** | CLI, optional research tool loop, input mapping, graph export, validation reports, SPARQL execution, tests; MIT |
 
-The engine versioning is independent of the private CLI and ontology release numbering; **v0.5.2** adds application-level workflow observability, step timing, and inspectable failure semantics after the completed v0.2.x change-intelligence and v0.3.x applicability increments. Ontology files remain external and retain their own licence. No private Git history was copied.
+The engine versioning is independent of the private CLI and ontology release numbering; **v0.5.3** adds persisted operational evaluation, replay consistency metrics, and minimal SQLite forward migration after the completed v0.2.x change-intelligence and v0.3.x applicability increments. Ontology files remain external and retain their own licence. No private Git history was copied.
 
 ## Limitations
 

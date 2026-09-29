@@ -1,5 +1,6 @@
 import hashlib
 import json
+import pytest
 
 from fastapi.testclient import TestClient
 
@@ -557,3 +558,48 @@ def test_idempotent_replay_does_not_duplicate_step_events(tmp_path, monkeypatch)
     assert first.json()["run_id"] == second.json()["run_id"]
     assert len(first.json()["steps"]) == 3
     assert len(second.json()["steps"]) == 3
+
+
+
+def test_operational_report_summarizes_persisted_runs(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    payload = _workflow_payload()
+    first = client.post(
+        "/workflow/runs",
+        json=payload,
+        headers={"Idempotency-Key": "ops-complete-1"},
+    )
+    second = client.post(
+        "/workflow/runs",
+        json=payload,
+        headers={"Idempotency-Key": "ops-complete-2"},
+    )
+    failed_payload = _workflow_payload()
+    failed_payload["controls"][0]["obligation_id"] = "other-obligation"
+    failed = client.post(
+        "/workflow/runs",
+        json=failed_payload,
+        headers={"Idempotency-Key": "ops-failed-1"},
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 201
+    assert failed.status_code == 400
+
+    report = client.get("/workflow/operations/report")
+    assert report.status_code == 200
+    body = report.json()
+    assert body["run_count"] == 3
+    assert body["completed_count"] == 2
+    assert body["failed_count"] == 1
+    assert body["running_count"] == 0
+    assert body["completion_rate"] == pytest.approx(2 / 3)
+    assert body["non_retryable_failure_count"] == 1
+    assert body["failure_codes"] == {"domain_validation_failed": 1}
+    assert body["step_event_count"] == 7
+    assert body["replay_group_count"] == 1
+    assert body["replay_consistent_group_count"] == 1
+    assert body["replay_consistency"] == 1.0
+    assert body["p95_step_ms"] >= 0.0

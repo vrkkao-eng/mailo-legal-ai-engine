@@ -174,6 +174,28 @@ class SQLiteWorkflowRepository:
                 );
                 """
             )
+            columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(workflow_runs)").fetchall()
+            }
+            migrations = {
+                "failed_step": "ALTER TABLE workflow_runs ADD COLUMN failed_step TEXT",
+                "error_code": "ALTER TABLE workflow_runs ADD COLUMN error_code TEXT",
+                "retryable": "ALTER TABLE workflow_runs ADD COLUMN retryable INTEGER",
+                "error_detail": "ALTER TABLE workflow_runs ADD COLUMN error_detail TEXT",
+            }
+            for column, statement in migrations.items():
+                if column not in columns:
+                    connection.execute(statement)
+
+    def list_runs(self) -> tuple[PersistedWorkflowRun, ...]:
+        """Return durable workflow runs ordered by creation time."""
+
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM workflow_runs ORDER BY created_at, run_id"
+            ).fetchall()
+        return tuple(self._row_to_run(row) for row in rows)
 
     def reserve_run(
         self,

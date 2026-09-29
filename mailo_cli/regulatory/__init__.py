@@ -56,6 +56,7 @@ from .observability import (
     WorkflowStepEvent,
     WorkflowStepStatus,
 )
+from .operational_eval import OperationalEvalReport, evaluate_operations
 from .persistence import (
     IdempotencyConflict,
     PersistedWorkflowRun,
@@ -125,6 +126,7 @@ __all__ = [
     "ObligationControlMapping",
     "ObligationImpactCandidate",
     "ObligationModality",
+    "OperationalEvalReport",
     "PersistedWorkflowRun",
     "Provision",
     "ProvisionUnit",
@@ -165,6 +167,7 @@ __all__ = [
     "benchmark_changes",
     "benchmark_workflow",
     "create_review_trail",
+    "evaluate_operations",
     "evaluate_workflow",
     "execute_durable_workflow",
     "diff_provisions",

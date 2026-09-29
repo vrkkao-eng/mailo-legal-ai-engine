@@ -320,3 +320,22 @@ class HumanResponsePersistRequest(StrictModel):
 class HumanResponsePersistResponse(StrictModel):
     review_case: PersistedReviewCaseResponse
     audit_events: list[AuditEventResponse]
+
+
+
+class OperationalEvalResponse(StrictModel):
+    run_count: int
+    completed_count: int
+    failed_count: int
+    running_count: int
+    completion_rate: float
+    retryable_failure_count: int
+    non_retryable_failure_count: int
+    failure_codes: dict[str, int]
+    step_event_count: int
+    mean_step_ms: float
+    p50_step_ms: float
+    p95_step_ms: float
+    replay_group_count: int
+    replay_consistent_group_count: int
+    replay_consistency: float

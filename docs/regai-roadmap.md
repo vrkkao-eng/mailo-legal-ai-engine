@@ -128,9 +128,10 @@ inspectable by workflow-run ID. Observability remains application-local; externa
 telemetry backends are deferred.
 
 ### v0.5.3 — operational evaluation
-Evaluate idempotency, deterministic replay, workflow completion, failure
-handling, latency, and batch behaviour without presenting engineering metrics as
-legal-quality scores.
+Evaluate persisted workflow completion/failure behaviour, failure taxonomy,
+step-latency summaries, and deterministic replay consistency from canonical
+request hashes. Add a minimal forward migration for existing SQLite workflow
+databases. Engineering metrics are not legal-quality scores.
 
 ### v0.5.4 — minimal operator surface
 Add a small operator-facing surface for regulatory changes, review queues, and
