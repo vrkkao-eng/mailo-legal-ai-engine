@@ -305,6 +305,7 @@ class SQLiteWorkflowRepository:
         return tuple(
             {
                 "review_id": row["review_id"],
+                "run_id": run_id,
                 "subject_type": row["subject_type"],
                 "subject_id": row["subject_id"],
                 "reviewer_role": row["reviewer_role"],
