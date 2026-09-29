@@ -95,9 +95,11 @@ reviewed regulatory changes through obligation-to-control mappings to downstream
 evidence requirements. Outputs are review candidates only; they do not establish
 evidence insufficiency, control failure, or legal non-compliance.
 
-### v0.4.3 — human review and audit trail
-Add explicit review decisions, reasons, timestamps, and escalation state while
-keeping machine suggestions separate from human determinations.
+### v0.4.3 — focused human review, routing and audit trail
+Route selected machine-generated candidates into focused human questions with
+explicit YES/NO/UNKNOWN responses, role-based routing, append-only audit events,
+and escalation. Optional evidence gaps may remain log-only. The review layer does
+not expose AI approval/compliance verdicts and UNKNOWN cannot close a review.
 
 ### v0.4.4 — workflow evaluation and end-to-end scenario
 Evaluate mapping completeness, evidence-gap handling, review routing, and audit
