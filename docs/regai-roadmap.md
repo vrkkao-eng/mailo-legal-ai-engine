@@ -122,8 +122,10 @@ events. Require idempotency keys for durable creation so retries do not duplicat
 review work. The storage boundary remains separate from domain/legal semantics.
 
 ### v0.5.2 — observability and failure semantics
-Add workflow-run IDs, structured step events, failure taxonomy, timing, and
-operator-facing diagnostics so partial or failed runs are inspectable.
+Reserve durable runs before evaluation, record ordered workflow-step events with
+timings, expose stable failure codes/retryability, and keep failed runs
+inspectable by workflow-run ID. Observability remains application-local; external
+telemetry backends are deferred.
 
 ### v0.5.3 — operational evaluation
 Evaluate idempotency, deterministic replay, workflow completion, failure
