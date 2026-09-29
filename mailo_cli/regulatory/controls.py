@@ -40,6 +40,10 @@ class Control:
     source: str | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.control_type, ControlType):
+            raise TypeError("control_type must be a ControlType")
+        if not isinstance(self.implementation_status, ControlImplementationStatus):
+            raise TypeError("implementation_status must be a ControlImplementationStatus")
         for field_name in ("control_id", "obligation_id", "title", "description", "owner_role"):
             value = getattr(self, field_name).strip()
             if not value:
