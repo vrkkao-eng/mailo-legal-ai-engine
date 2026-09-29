@@ -23,6 +23,7 @@ from mailo_cli.shape_registry import ShapeRegistry
 from mailo_cli.settings import load_api_settings
 from mailo_cli.validate_cmd import build_turtle, parse_violations, run_shacl
 from mailo_cli.regulatory.execution import WorkflowExecutionError, execute_durable_workflow
+from mailo_cli.regulatory.operational_eval import evaluate_operations
 from mailo_cli.regulatory.persistence import (
     IdempotencyConflict,
     SQLiteWorkflowRepository,
@@ -34,6 +35,7 @@ from mailo_cli.workflow_api import (
     AuditEventResponse,
     HumanResponsePersistRequest,
     HumanResponsePersistResponse,
+    OperationalEvalResponse,
     PersistedReviewCaseResponse,
     WorkflowEvaluateRequest,
     WorkflowEvaluateResponse,
@@ -424,3 +426,15 @@ def persist_human_response(
         )
 
     return _bad_request(run)
+
+
+
+@app.get("/workflow/operations/report", response_model=OperationalEvalResponse)
+def workflow_operations_report() -> OperationalEvalResponse:
+    """Summarize persisted workflow reliability and latency evidence."""
+
+    return _bad_request(
+        lambda: OperationalEvalResponse.model_validate(
+            evaluate_operations(_get_workflow_repository()).to_dict()
+        )
+    )
