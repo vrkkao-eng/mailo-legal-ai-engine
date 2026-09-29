@@ -123,12 +123,10 @@ def diff_provisions(
         ChangeType.DELETED: 1,
         ChangeType.ADDED: 2,
     }
-    return tuple(
-        sorted(
-            candidates,
-            key=lambda item: (
-                order[item.change_type],
-                (item.old_locator or item.new_locator).canonical.casefold(),
-            ),
-        )
-    )
+    def sort_key(item: StructuralChangeCandidate) -> tuple[int, str]:
+        locator = item.old_locator or item.new_locator
+        if locator is None:
+            raise ValueError("structural change candidate is missing a locator")
+        return order[item.change_type], locator.canonical.casefold()
+
+    return tuple(sorted(candidates, key=sort_key))
