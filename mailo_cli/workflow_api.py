@@ -248,3 +248,51 @@ def to_domain_request(
         tuple(item.to_domain() for item in request.controls),
         request.evidence.to_domain(),
     )
+
+
+
+class PersistedReviewCaseResponse(StrictModel):
+    review_id: str
+    run_id: str | None = None
+    subject_type: str
+    subject_id: str
+    reviewer_role: str
+    status: str
+    question: dict[str, object]
+    created_at: str
+
+
+class AuditEventResponse(StrictModel):
+    event_id: str
+    review_id: str
+    event_type: str
+    actor_role: str
+    occurred_at: str
+    detail: str
+
+
+class WorkflowRunResponse(StrictModel):
+    run_id: str
+    idempotency_key: str
+    request_sha256: str
+    change_id: str
+    status: str
+    created_at: str
+    created: bool
+    result: dict[str, object]
+    review_cases: list[PersistedReviewCaseResponse]
+    audit_events: list[AuditEventResponse]
+
+
+class HumanResponsePersistRequest(StrictModel):
+    response_id: str = Field(min_length=1, max_length=191)
+    answer: Literal["yes", "no", "unknown"]
+    reviewer_role: str = Field(min_length=1)
+    rationale: str = Field(min_length=1)
+    responded_at: datetime
+    escalation_target: str | None = None
+
+
+class HumanResponsePersistResponse(StrictModel):
+    review_case: PersistedReviewCaseResponse
+    audit_events: list[AuditEventResponse]
