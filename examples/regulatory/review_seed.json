@@ -1,0 +1,29 @@
+{
+  "fixture_id": "v0.4.3-review-seed",
+  "description": "Focused human-review examples. These records represent workflow routing and human responses, not legal-compliance determinations.",
+  "cases": [
+    {
+      "review_id": "review-fria-evidence-001",
+      "subject_type": "evidence_gap",
+      "subject_id": "evreq-mitigation-record",
+      "reviewer_role": "AI governance",
+      "question": "Could the required artefact exist outside the currently indexed evidence source?",
+      "permitted_answers": ["yes", "no", "unknown"],
+      "status": "open"
+    },
+    {
+      "review_id": "review-fria-impact-001",
+      "subject_type": "regulatory_impact",
+      "subject_id": "ai-act-2026-art-27-4-changed:ctrl-fria-01",
+      "reviewer_role": "Legal",
+      "question": "Does the reviewed regulatory change alter the basis or scope of this existing control mapping?",
+      "permitted_answers": ["yes", "no", "unknown"],
+      "status": "open"
+    }
+  ],
+  "notes": [
+    "Optional evidence gaps are log-only by default and do not create review tasks.",
+    "UNKNOWN is an explicit safe response and cannot close a review as resolved.",
+    "No approve/reject/compliant/non-compliant answer is exposed."
+  ]
+}

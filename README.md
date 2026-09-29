@@ -7,7 +7,7 @@
 ![License MIT](https://img.shields.io/badge/License-MIT-green)
 ![Status Research Prototype](https://img.shields.io/badge/Status-Research%20Prototype-orange)
 
-MAILO Legal AI Engine is a Python application layer for inspectable regulatory-AI workflows. The public RegAI line now covers version-aware regulatory change intelligence, reviewed obligation/applicability contracts, organisation-owned control mappings, evidence requirements/records, and v0.4.2 evidence-gap/regulatory-impact candidates, while retaining the existing RDF/JSON-LD, reviewed SPARQL, SHACL, API, retrieval-baseline, testing, and reproducibility layers. An optional constrained LLM tool loop can structure supplied source material; it is not used to determine regulatory changes, applicability, controls, or legal compliance.
+MAILO Legal AI Engine is a Python application layer for inspectable regulatory-AI workflows. The public RegAI line now covers version-aware regulatory change intelligence, reviewed obligation/applicability contracts, organisation-owned control mappings, evidence requirements/records, evidence-gap/regulatory-impact candidates, and v0.4.3 focused human review with audit trails, while retaining the existing RDF/JSON-LD, reviewed SPARQL, SHACL, API, retrieval-baseline, testing, and reproducibility layers. An optional constrained LLM tool loop can structure supplied source material; it is not used to determine regulatory changes, applicability, controls, or legal compliance.
 
 The public engine was extracted and refactored from MAILO thesis tooling. The canonical ontology and substantive legal constraints remain in the separate [MAILO ontology repository](https://github.com/vrkkao-eng/Mailo-ontology).
 
@@ -81,19 +81,19 @@ flowchart TD
 
 The finding graph and system-description validation are deliberately separate inputs. The engine does **not** turn LLM output into an automatic legal-compliance conclusion.
 
-## RegAI v0.4.2
+## RegAI v0.4.3
 
-v0.2.x established version-aware regulatory change intelligence and reviewed change benchmarking. v0.3.x added reviewed obligation models, deterministic factual applicability gates, explicit `REVIEW_REQUIRED` abstention, and applicability benchmarking. v0.4.0 introduced reviewed obligation-to-control mappings; v0.4.1 added reviewed evidence requirements and supplied evidence records with provenance; v0.4.2 adds evidence-gap candidates and deterministic downstream review propagation from regulatory changes.
+v0.2.x established version-aware regulatory change intelligence and reviewed change benchmarking. v0.3.x added reviewed obligation models, deterministic factual applicability gates, explicit `REVIEW_REQUIRED` abstention, and applicability benchmarking. v0.4.0 introduced reviewed obligation-to-control mappings; v0.4.1 added evidence requirements/records; v0.4.2 added evidence-gap and regulatory-impact candidates; v0.4.3 adds selective focused human review, role-based routing, explicit `UNKNOWN`, escalation, and append-only audit events.
 
-A missing registered record means only that no record is present in the supplied evidence set. A propagated impact means only that downstream controls or evidence requirements should be reviewed after an upstream legal change. Neither output is a compliance verdict.
+The review layer deliberately avoids generic AI approval or compliance actions. Optional evidence gaps may remain log-only, while routed cases ask a specific question with `YES`, `NO`, or `UNKNOWN`. `RESOLVED` describes workflow handling only; it is not a legal-compliance conclusion.
 
-See [RegAI roadmap](docs/regai-roadmap.md), [Compliance workflow](docs/compliance-workflow.md), [Evidence workflow](docs/evidence-workflow.md), and [Architecture boundaries](docs/architecture-boundaries.md).
+See [RegAI roadmap](docs/regai-roadmap.md), [Compliance workflow](docs/compliance-workflow.md), [Evidence workflow](docs/evidence-workflow.md), [Workflow impact](docs/workflow-impact.md), [Focused human review](docs/human-review.md), and [Architecture boundaries](docs/architecture-boundaries.md).
 
 ## Implemented now vs next engineering increment
 
 | Implemented now | Next engineering increment |
 | --- | --- |
-| Python package + CLI | Human review and audit trail (v0.4.3) |
+| Python package + CLI | Workflow benchmark and end-to-end scenario (v0.4.4) |
 | FastAPI service layer for offline graph, demo-shape validation, and reviewed SPARQL | Deployment and observability |
 | RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
@@ -298,7 +298,7 @@ Each validation report records SHA-256 hashes of the input instance and shapes f
 | [Mailo-ontology](https://github.com/vrkkao-eng/Mailo-ontology) | Canonical RDF/OWL model, substantive SHACL shapes, legal-source annotations, releases; CC BY 4.0 |
 | **mailo-legal-ai-engine** | CLI, optional research tool loop, input mapping, graph export, validation reports, SPARQL execution, tests; MIT |
 
-The engine versioning is independent of the private CLI and ontology release numbering; **v0.4.1** extends the organisation-facing control-workflow line with evidence requirements and records after the completed v0.2.x change-intelligence and v0.3.x applicability increments. Ontology files remain external and retain their own licence. No private Git history was copied.
+The engine versioning is independent of the private CLI and ontology release numbering; **v0.4.3** extends the organisation-facing workflow with focused human review and audit trails after the completed v0.2.x change-intelligence and v0.3.x applicability increments. Ontology files remain external and retain their own licence. No private Git history was copied.
 
 ## Limitations
 
