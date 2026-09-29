@@ -84,8 +84,10 @@ Introduce organisation-owned `Control` records and reviewed
 workflow data and is not a legal-compliance verdict.
 
 ### v0.4.1 — control evidence requirements
-Represent evidence requirements and evidence records without treating document
-presence as proof of compliance.
+Represent reviewed evidence requirements and supplied evidence records with
+URI/hash/timestamp/owner provenance. Validate record-to-requirement references
+and evidence-type consistency without treating artefact presence as proof of
+sufficiency or compliance.
 
 ### v0.4.2 — gap and regulatory-impact analysis
 Propagate reviewed obligation/control relationships into evidence-gap and
