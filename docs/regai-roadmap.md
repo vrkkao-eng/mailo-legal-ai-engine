@@ -90,8 +90,10 @@ and evidence-type consistency without treating artefact presence as proof of
 sufficiency or compliance.
 
 ### v0.4.2 — gap and regulatory-impact analysis
-Propagate reviewed obligation/control relationships into evidence-gap and
-regulatory-change review candidates.
+Identify reviewed evidence requirements with no registered records and propagate
+reviewed regulatory changes through obligation-to-control mappings to downstream
+evidence requirements. Outputs are review candidates only; they do not establish
+evidence insufficiency, control failure, or legal non-compliance.
 
 ### v0.4.3 — human review and audit trail
 Add explicit review decisions, reasons, timestamps, and escalation state while

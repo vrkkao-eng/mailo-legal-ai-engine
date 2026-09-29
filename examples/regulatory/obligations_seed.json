@@ -4,7 +4,7 @@
   "obligations": [
     {
       "obligation_id": "ai-act-art27-fria-review",
-      "source_id": "eu-ai-act-2024-1689",
+      "source_id": "eu-ai-act",
       "locator": {"provision":"Article 27","paragraph":"1","point":null,"subparagraph":null},
       "actor": "deployer",
       "action": "perform",
