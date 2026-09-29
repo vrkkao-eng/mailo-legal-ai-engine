@@ -444,8 +444,39 @@ def test_unknown_response_requires_and_persists_escalation(tmp_path, monkeypatch
 
     assert valid.status_code == 200, valid.text
     assert valid.json()["review_case"]["status"] == "escalated"
+    assert valid.json()["review_case"]["escalation"]["target_role"] == "Senior Legal"
     assert [item["event_type"] for item in valid.json()["audit_events"]] == [
         "review_created",
         "response_recorded",
         "escalated",
     ]
+
+
+
+def test_persisted_response_rejects_wrong_reviewer_role(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+    created = client.post(
+        "/workflow/runs",
+        json=_workflow_payload(),
+        headers={"Idempotency-Key": "fria-wrong-role"},
+    )
+    review = next(
+        item
+        for item in created.json()["review_cases"]
+        if item["subject_type"] == "evidence_gap"
+    )
+
+    response = client.post(
+        f"/workflow/reviews/{review['review_id']}/responses",
+        json={
+            "response_id": "resp-wrong-role",
+            "answer": "no",
+            "reviewer_role": "Legal",
+            "rationale": "Wrong reviewer role should not be accepted.",
+            "responded_at": "2026-09-29T22:40:00+02:00",
+        },
+    )
+
+    assert response.status_code == 400
+    assert "assigned review role" in response.json()["detail"]
