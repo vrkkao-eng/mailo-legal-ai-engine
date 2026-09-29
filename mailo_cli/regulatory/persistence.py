@@ -486,8 +486,9 @@ class SQLiteWorkflowRepository:
                 connection.execute(
                     """
                     INSERT INTO audit_events (
-                        event_id, review_id, event_type, actor_role, occurred_at, detail
-                    ) VALUES (?, ?, ?, ?, ?, ?)
+                        event_id, review_id, event_sequence, event_type,
+                        actor_role, occurred_at, detail
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         f"evt:{review_id}:{response_id}:closed",
