@@ -16,7 +16,7 @@ dependencies = ["click>=8.1,<9", "rich>=13,<16", "rdflib>=7,<8", "pyshacl>=0.25,
 research = ["anthropic>=0.42,<2"]
 service = ["fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1"]
 retrieval = ["pypdf>=6,<7"]
-dev = ["pytest>=8,<10", "pytest-asyncio>=0.23,<2", "build>=1,<2", "httpx>=0.27,<1"]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.23,<2", "pytest-cov>=6,<8", "build>=1,<2", "httpx>=0.27,<1", "ruff>=0.9,<1", "mypy>=1.14,<2"]
 
 [project.scripts]
 mailo = "mailo_cli.cli:main"
@@ -30,3 +30,17 @@ mailo_cli = ["resources/*.json", "resources/*.ttl", "resources/queries/*.sparql"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
