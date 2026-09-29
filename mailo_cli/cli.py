@@ -10,6 +10,7 @@ from mailo_cli import __version__
 from mailo_cli.pipeline import export_findings, read_json, validate_findings
 from mailo_cli.services import execute_packaged_query
 from mailo_cli.validate_cmd import run_validate
+from mailo_cli.regulatory.workflow_demo import run_fixed_workflow_scenario
 
 RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
 QUERIES = ("cjeu_chain", "frameworks", "fto_patent", "obligations_samd", "tensions")
@@ -137,6 +138,13 @@ def research(input_path, model, output):
             f"Research did not complete ({type(exc).__name__}); no successful run claimed"
         ) from exc
     click.echo(json.dumps(stats))
+
+
+@main.command("workflow-demo")
+def workflow_demo():
+    """Run the deterministic RegAI v0.4.4 end-to-end workflow scenario."""
+    result = guarded(run_fixed_workflow_scenario)
+    click.echo(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
