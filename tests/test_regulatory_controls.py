@@ -51,3 +51,26 @@ def test_reviewed_mapping_preserves_ids_and_rationale():
     )
     assert mapping.reviewed is True
     assert mapping.control_id == "ctrl-fria-01"
+
+
+def test_control_rejects_untyped_enum_values():
+    with pytest.raises(TypeError, match="control_type"):
+        Control(
+            control_id="ctrl-1",
+            obligation_id="obl-1",
+            title="Control",
+            description="Description",
+            control_type="assessment",
+            owner_role="AI governance",
+        )
+
+    with pytest.raises(TypeError, match="implementation_status"):
+        Control(
+            control_id="ctrl-2",
+            obligation_id="obl-2",
+            title="Control",
+            description="Description",
+            control_type=ControlType.ASSESSMENT,
+            owner_role="AI governance",
+            implementation_status="implemented",
+        )
