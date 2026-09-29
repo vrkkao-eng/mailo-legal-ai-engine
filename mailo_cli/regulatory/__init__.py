@@ -57,6 +57,7 @@ from .observability import (
     WorkflowStepStatus,
 )
 from .operational_eval import OperationalEvalReport, evaluate_operations
+from .operator_views import case_trace_view, regulatory_changes_view, review_queue_view
 from .persistence import (
     IdempotencyConflict,
     PersistedWorkflowRun,
@@ -179,6 +180,9 @@ __all__ = [
     "propagate_regulatory_change",
     "route_review_candidate",
     "run_fixed_workflow_scenario",
+    "case_trace_view",
+    "regulatory_changes_view",
+    "review_queue_view",
     "reconcile_candidates",
     "text_sha256",
 ]

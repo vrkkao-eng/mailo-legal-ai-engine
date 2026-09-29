@@ -134,8 +134,10 @@ request hashes. Add a minimal forward migration for existing SQLite workflow
 databases. Engineering metrics are not legal-quality scores.
 
 ### v0.5.4 — minimal operator surface
-Add a small operator-facing surface for regulatory changes, review queues, and
-case traces once the API/persistence/observability contracts are stable.
+Close the v0.5.x line with three read-only operator views: regulatory changes,
+focused review queue, and auditable case trace. The UI is dependency-free and
+local/demo-oriented; authentication, RBAC and production console security remain
+explicitly out of scope.
 
 ## Design principle
 
