@@ -1,3 +1,4 @@
+from .applicability_benchmark import ApplicabilityBenchmarkReport, ApplicabilityGold, benchmark_applicability
 from .applicability import ApplicabilityGate, GateOperator, assess_applicability
 from .benchmark import ChangeBenchmarkReport, benchmark_changes
 """Version-aware regulatory source and change models.
@@ -28,6 +29,9 @@ from .models import (
 )
 
 __all__ = [
+    "ApplicabilityBenchmarkReport",
+    "ApplicabilityGold",
+    "benchmark_applicability",
     "ApplicabilityGate",
     "GateOperator",
     "assess_applicability",
