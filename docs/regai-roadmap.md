@@ -116,10 +116,10 @@ and an offline end-to-end demo without duplicating domain logic or claiming
 persistence.
 
 ### v0.5.1 — transactional persistence
-Add an explicit relational persistence layer for workflow cases, evidence
-metadata, human responses, audit events, and durable workflow-run identifiers.
-Prefer transactional operational storage before introducing optional graph
-projections.
+Add SQLite transactional persistence for durable workflow-run identifiers,
+evidence metadata, focused review cases, human responses, escalations, and audit
+events. Require idempotency keys for durable creation so retries do not duplicate
+review work. The storage boundary remains separate from domain/legal semantics.
 
 ### v0.5.2 — observability and failure semantics
 Add workflow-run IDs, structured step events, failure taxonomy, timing, and
