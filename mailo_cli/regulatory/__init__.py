@@ -50,6 +50,14 @@ from .obligations import (
     SystemDescription,
 )
 from .reconcile import ReconciledChange, ReconciliationStatus, reconcile_candidates
+from .workflow_impact import (
+    EvidenceGapCandidate,
+    EvidenceGapStatus,
+    RegulatoryImpactCandidate,
+    RegulatoryImpactStatus,
+    find_evidence_gaps,
+    propagate_regulatory_change,
+)
 
 __all__ = [
     "ApplicabilityAssessment",
@@ -66,6 +74,8 @@ __all__ = [
     "EvidenceRequirement",
     "EvidenceSet",
     "EvidenceType",
+    "EvidenceGapCandidate",
+    "EvidenceGapStatus",
     "GateOperator",
     "ImpactLinkStatus",
     "Obligation",
@@ -80,6 +90,8 @@ __all__ = [
     "RegulatoryChangeSet",
     "RegulatorySource",
     "RegulatoryVersion",
+    "RegulatoryImpactCandidate",
+    "RegulatoryImpactStatus",
     "SourceLocator",
     "StructuralChangeCandidate",
     "SystemDescription",
@@ -87,10 +99,12 @@ __all__ = [
     "benchmark_applicability",
     "benchmark_changes",
     "diff_provisions",
+    "find_evidence_gaps",
     "link_change_to_obligations",
     "load_change_set",
     "load_evidence_set",
     "normalise_text",
+    "propagate_regulatory_change",
     "reconcile_candidates",
     "text_sha256",
 ]
