@@ -13,7 +13,7 @@ v0.4.0 starts the compliance-workflow layer. It turns a reviewed application-lay
 
 A `Control` identifies the obligation it operationalises, its control type, organisation owner and implementation state. The default state is `NOT_ASSESSED`, making absence of assessment explicit rather than treating it as failure or compliance.
 
-`ObligationControlMapping` records the reviewed link and rationale. Candidate extraction, evidence requirements, gap analysis and human-review state transitions are deferred to later v0.4.x releases.
+`ObligationControlMapping` records the reviewed link and rationale. v0.4.1 extends this workflow with reviewed evidence requirements and supplied evidence records; gap analysis and human-review state transitions remain later v0.4.x releases.
 
 ## Release line
 
@@ -22,3 +22,6 @@ A `Control` identifies the obligation it operationalises, its control type, orga
 - v0.4.2: evidence gap / regulatory impact analysis
 - v0.4.3: human review and audit trail
 - v0.4.4: workflow benchmark and end-to-end scenario
+
+
+Evidence semantics and provenance constraints are documented in [Evidence workflow](evidence-workflow.md).
