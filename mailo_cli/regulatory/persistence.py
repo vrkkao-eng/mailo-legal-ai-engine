@@ -806,7 +806,7 @@ class SQLiteWorkflowRepository:
                 FROM audit_events AS a
                 JOIN review_cases AS r ON r.review_id = a.review_id
                 WHERE r.run_id = ?
-                ORDER BY a.occurred_at, a.event_sequence, a.event_id
+                ORDER BY a.review_id, a.event_sequence, a.occurred_at, a.event_id
                 """,
                 (run_id,),
             ).fetchall()
