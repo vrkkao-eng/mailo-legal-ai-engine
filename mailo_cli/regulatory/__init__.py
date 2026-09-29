@@ -4,6 +4,7 @@ This package is an application-layer representation. It does not replace the
 canonical MAILO ontology and does not make legal-compliance determinations.
 """
 
+from .diff import ProvisionUnit, StructuralChangeCandidate, diff_provisions, normalise_text, text_sha256
 from .io import load_change_set
 from .models import (
     ChangeType,
@@ -17,6 +18,11 @@ from .models import (
 
 __all__ = [
     "ChangeType",
+    "ProvisionUnit",
+    "StructuralChangeCandidate",
+    "diff_provisions",
+    "normalise_text",
+    "text_sha256",
     "Provision",
     "RegulatoryChange",
     "RegulatoryChangeSet",
