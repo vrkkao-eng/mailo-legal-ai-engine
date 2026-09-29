@@ -7,7 +7,7 @@
 ![License MIT](https://img.shields.io/badge/License-MIT-green)
 ![Status Research Prototype](https://img.shields.io/badge/Status-Research%20Prototype-orange)
 
-MAILO Legal AI Engine is a Python application layer for inspectable regulatory-AI workflows. v0.2.0 adds version-aware regulatory source and change models plus reviewed change fixtures, while retaining the existing RDF/JSON-LD, reviewed SPARQL, SHACL, API, retrieval-baseline, testing, and reproducibility layers. An optional constrained LLM tool loop can structure supplied source material; it is not used to determine regulatory changes or legal compliance.
+MAILO Legal AI Engine is a Python application layer for inspectable regulatory-AI workflows. The public RegAI line now covers version-aware regulatory change intelligence, reviewed obligation/applicability contracts, and v0.4.0 organisation-owned control mappings, while retaining the existing RDF/JSON-LD, reviewed SPARQL, SHACL, API, retrieval-baseline, testing, and reproducibility layers. An optional constrained LLM tool loop can structure supplied source material; it is not used to determine regulatory changes, applicability, controls, or legal compliance.
 
 The public engine was extracted and refactored from MAILO thesis tooling. The canonical ontology and substantive legal constraints remain in the separate [MAILO ontology repository](https://github.com/vrkkao-eng/Mailo-ontology).
 
@@ -21,7 +21,9 @@ The public engine was extracted and refactored from MAILO thesis tooling. The ca
 | **Validation** | RDFLib instance building, pySHACL execution, complete result retention, input/shape SHA-256 hashes |
 | **Testing** | pytest regression coverage, mocked model interactions, network isolation |
 | **CI** | GitHub Actions across Python 3.11–3.13, package build, clean-environment wheel smoke test |
-| **Research transparency** | Explicit separation between legal source material, modelling choices, executable constraints, and system outputs |\n| **Regulatory change modelling** | Version-aware sources, validity intervals, provision locators, typed changes, and reviewed EU AI Act amendment fixtures |
+| **Research transparency** | Explicit separation between legal source material, modelling choices, executable constraints, and system outputs |
+| **Regulatory change modelling** | Version-aware sources, validity intervals, provision locators, typed changes, reviewed reconciliation, and benchmark fixtures |
+| **RegAI workflow contracts** | Reviewed obligation/applicability contracts and organisation-owned control mappings with explicit non-compliance-verdict boundaries |
 
 ## 60-second offline demo
 
@@ -79,11 +81,19 @@ flowchart TD
 
 The finding graph and system-description validation are deliberately separate inputs. The engine does **not** turn LLM output into an automatic legal-compliance conclusion.
 
-## RegAI v0.2.0\n\nv0.2.0 introduces application-layer models for `RegulatorySource`, `RegulatoryVersion`, `Provision`, `RegulatoryChange`, `ChangeType`, `SourceLocator`, and validated `RegulatoryChangeSet` collections. The first reviewed fixture records selected changes to the AI Act made by Regulation (EU) 2026/1744. These records are test data for version/change engineering; they are not an automated legal update feed or applicability determination.\n\nSee [RegAI roadmap](docs/regai-roadmap.md) and [Architecture boundaries](docs/architecture-boundaries.md).\n\n## Implemented now vs next engineering increment
+## RegAI v0.4.0
+
+v0.2.x established version-aware regulatory change intelligence and reviewed change benchmarking. v0.3.x added reviewed obligation models, deterministic factual applicability gates, explicit `REVIEW_REQUIRED` abstention, and applicability benchmarking. v0.4.0 starts the organisation-facing workflow layer with reviewed obligation-to-control mappings and explicit control implementation state.
+
+A control record is operational workflow data. `IMPLEMENTED`, `PLANNED`, or `REVIEW_REQUIRED` is not a legal-compliance verdict. Evidence requirements, gap analysis, and human-review audit trails remain later v0.4.x work.
+
+See [RegAI roadmap](docs/regai-roadmap.md), [Compliance workflow](docs/compliance-workflow.md), and [Architecture boundaries](docs/architecture-boundaries.md).
+
+## Implemented now vs next engineering increment
 
 | Implemented now | Next engineering increment |
 | --- | --- |
-| Python package + CLI | Deterministic article/paragraph structural diff (v0.2.1) |
+| Python package + CLI | Control evidence requirements (v0.4.1) |
 | FastAPI service layer for offline graph, demo-shape validation, and reviewed SPARQL | Deployment and observability |
 | RDF / JSON-LD export | Service configuration and deployment controls |
 | Reviewed SPARQL execution | Vector retrieval / Qdrant |
@@ -288,7 +298,7 @@ Each validation report records SHA-256 hashes of the input instance and shapes f
 | [Mailo-ontology](https://github.com/vrkkao-eng/Mailo-ontology) | Canonical RDF/OWL model, substantive SHACL shapes, legal-source annotations, releases; CC BY 4.0 |
 | **mailo-legal-ai-engine** | CLI, optional research tool loop, input mapping, graph export, validation reports, SPARQL execution, tests; MIT |
 
-The engine versioning is independent of the private CLI and ontology release numbering; **v0.2.0** begins the public RegAI change-intelligence line. Ontology files remain external and retain their own licence. No private Git history was copied.
+The engine versioning is independent of the private CLI and ontology release numbering; **v0.4.0** begins the organisation-facing control-workflow line after the completed v0.2.x change-intelligence and v0.3.x applicability increments. Ontology files remain external and retain their own licence. No private Git history was copied.
 
 ## Limitations
 
