@@ -49,6 +49,12 @@ from .obligations import (
     ObligationModality,
     SystemDescription,
 )
+from .persistence import (
+    IdempotencyConflict,
+    PersistedWorkflowRun,
+    SQLiteWorkflowRepository,
+    WorkflowRunNotFound,
+)
 from .reconcile import ReconciledChange, ReconciliationStatus, reconcile_candidates
 from .service import WorkflowEvaluationResult, evaluate_workflow
 from .review import (
@@ -106,11 +112,13 @@ __all__ = [
     "EvidenceGapStatus",
     "GateOperator",
     "HumanResponse",
+    "IdempotencyConflict",
     "ImpactLinkStatus",
     "Obligation",
     "ObligationControlMapping",
     "ObligationImpactCandidate",
     "ObligationModality",
+    "PersistedWorkflowRun",
     "Provision",
     "ProvisionUnit",
     "ReconciledChange",
@@ -132,8 +140,10 @@ __all__ = [
     "ReviewTrail",
     "SourceLocator",
     "StructuralChangeCandidate",
+    "SQLiteWorkflowRepository",
     "SystemDescription",
     "WorkflowBenchmarkReport",
+    "WorkflowRunNotFound",
     "WorkflowDemoResult",
     "WorkflowEvaluationResult",
     "WorkflowGold",
