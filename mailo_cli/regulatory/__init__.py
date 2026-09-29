@@ -1,3 +1,4 @@
+from .benchmark import ChangeBenchmarkReport, benchmark_changes
 """Version-aware regulatory source and change models.
 
 This package is an application-layer representation. It does not replace the
@@ -18,6 +19,8 @@ from .models import (
 )
 
 __all__ = [
+    "ChangeBenchmarkReport",
+    "benchmark_changes",
     "ChangeType",
     "ProvisionUnit",
     "StructuralChangeCandidate",
