@@ -13,7 +13,7 @@ knowledge, application workflow, and reasoning-system research separate.
 | **v0.2.x** | What changed in the regulation? | Version-aware regulatory sources, reviewed change fixtures, deterministic structural diff, change benchmark |
 | v0.3.x | What does the change mean for a described system? | Obligation representation, applicability, candidate extraction, abstention/evaluation |
 | v0.4.x | What should an organisation review or evidence? | Control mapping, evidence records, human review, impact propagation |
-| v0.5.x | Can the workflow be evaluated and demonstrated end to end? | Unified eval harness, hybrid retrieval experiments, minimal product UI, end-to-end scenario |
+| v0.5.x | Can the workflow operate as an integration-ready application service? | Workflow API, persistence, observability, operational evaluation |
 
 ## v0.2.0 scope
 
@@ -106,6 +106,33 @@ Close the v0.4.x line with a deterministic fixed FRIA scenario, routing and
 traceability benchmarks, audit/escalation integrity checks, UNKNOWN-safety
 checks, and explicitly labelled workflow-burden proxies. These proxies are not
 human cognitive-load measurements.
+
+## v0.5.x planned increments
+
+### v0.5.0 — stateless workflow API
+Expose the completed v0.4.x regulatory workflow through typed HTTP transport
+schemas and a stateless application-service layer. Support workflow evaluation
+and an offline end-to-end demo without duplicating domain logic or claiming
+persistence.
+
+### v0.5.1 — transactional persistence
+Add an explicit relational persistence layer for workflow cases, evidence
+metadata, human responses, audit events, and durable workflow-run identifiers.
+Prefer transactional operational storage before introducing optional graph
+projections.
+
+### v0.5.2 — observability and failure semantics
+Add workflow-run IDs, structured step events, failure taxonomy, timing, and
+operator-facing diagnostics so partial or failed runs are inspectable.
+
+### v0.5.3 — operational evaluation
+Evaluate idempotency, deterministic replay, workflow completion, failure
+handling, latency, and batch behaviour without presenting engineering metrics as
+legal-quality scores.
+
+### v0.5.4 — minimal operator surface
+Add a small operator-facing surface for regulatory changes, review queues, and
+case traces once the API/persistence/observability contracts are stable.
 
 ## Design principle
 
