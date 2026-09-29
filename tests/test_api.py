@@ -603,3 +603,74 @@ def test_operational_report_summarizes_persisted_runs(tmp_path, monkeypatch):
     assert body["replay_consistent_group_count"] == 1
     assert body["replay_consistency"] == 1.0
     assert body["p95_step_ms"] >= 0.0
+
+
+
+def test_operator_surface_and_empty_read_models(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    page = client.get("/operator")
+    assert page.status_code == 200
+    assert "MAILO RegAI Operator" in page.text
+    assert "Regulatory Changes" in page.text
+    assert "Review Queue" in page.text
+    assert "Case Trace" in page.text
+
+    assert client.get("/operator/api/changes").json() == []
+    assert client.get("/operator/api/reviews").json() == []
+
+
+def test_operator_views_expose_change_reviews_and_case_trace(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    created = client.post(
+        "/workflow/runs",
+        json=_workflow_payload(),
+        headers={"Idempotency-Key": "operator-001"},
+    )
+    assert created.status_code == 201
+    run_id = created.json()["run_id"]
+
+    changes = client.get("/operator/api/changes")
+    assert changes.status_code == 200
+    assert changes.json() == [{
+        "change_id": "ai-act-2026-art-27-4-changed",
+        "run_count": 1,
+        "latest_run_id": run_id,
+        "latest_status": "completed",
+        "latest_created_at": created.json()["created_at"],
+        "failed_run_count": 0,
+    }]
+
+    reviews = client.get("/operator/api/reviews")
+    assert reviews.status_code == 200
+    assert len(reviews.json()) == 2
+    assert {item["reviewer_role"] for item in reviews.json()} == {
+        "AI governance",
+        "Legal",
+    }
+
+    trace = client.get(f"/operator/api/cases/{run_id}")
+    assert trace.status_code == 200
+    body = trace.json()
+    assert body["run"]["run_id"] == run_id
+    assert body["run"]["change_id"] == "ai-act-2026-art-27-4-changed"
+    assert [step["step"] for step in body["steps"]] == [
+        "evaluate",
+        "persist",
+        "review_ready",
+    ]
+    assert len(body["reviews"]) == 2
+    assert len(body["audit_events"]) == 2
+    assert body["compliance_determination_produced"] is False
+
+
+def test_operator_case_trace_missing_run_returns_404(tmp_path, monkeypatch):
+    repository = SQLiteWorkflowRepository(tmp_path / "workflow.db")
+    monkeypatch.setattr(api, "_WORKFLOW_REPOSITORY", repository)
+
+    response = client.get("/operator/api/cases/wf-missing")
+
+    assert response.status_code == 404
