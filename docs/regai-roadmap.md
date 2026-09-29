@@ -51,9 +51,11 @@ v0.2.0 does **not** add:
 Normalise versioned texts into stable article/paragraph units and identify
 added, deleted, text-changed and date-changed candidates without an LLM.
 
-### v0.2.2 — provenance and impact candidates
-Attach stable version/source metadata and expose candidate links from changed
-provisions to existing MAILO concepts without claiming legal impact.
+### v0.2.2 — reviewed change reconciliation
+Reconcile deterministic structural candidates with reviewed source-aware change
+records. Preserve unreviewed candidates explicitly, allow reviewed metadata to
+refine supported types such as TEXT_CHANGED to DATE_CHANGED, and never promote
+machine candidates into legal conclusions silently.
 
 ### v0.2.3 — reviewed change benchmark
 Create an adjudicated set of known changes and measure change precision,
