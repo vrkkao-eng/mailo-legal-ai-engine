@@ -8,6 +8,13 @@ canonical MAILO ontology and does not make legal-compliance determinations.
 from .diff import ProvisionUnit, StructuralChangeCandidate, diff_provisions, normalise_text, text_sha256
 from .io import load_change_set
 from .reconcile import ReconciledChange, ReconciliationStatus, reconcile_candidates
+from .obligations import (
+    ApplicabilityAssessment,
+    ApplicabilityStatus,
+    Obligation,
+    ObligationModality,
+    SystemDescription,
+)
 from .models import (
     ChangeType,
     Provision,
@@ -19,6 +26,11 @@ from .models import (
 )
 
 __all__ = [
+    "ApplicabilityAssessment",
+    "ApplicabilityStatus",
+    "Obligation",
+    "ObligationModality",
+    "SystemDescription",
     "ChangeBenchmarkReport",
     "benchmark_changes",
     "ChangeType",

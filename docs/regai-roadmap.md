@@ -62,6 +62,20 @@ Close the v0.2.x line with a named reviewed gold set and reproducible precision,
 recall, F1, locator accuracy, exact type accuracy, and reviewed type coverage.
 Seed-set scores are regression evidence only, not population-level performance.
 
+## v0.3.x planned increments
+
+### v0.3.0 — obligation representation
+Define reviewed actor/action/object/modality obligation units, minimal system descriptions, and a three-state applicability contract with explicit REVIEW_REQUIRED abstention.
+
+### v0.3.1 — change-to-obligation candidates
+Link reviewed regulatory changes to candidate affected obligations while preserving provenance and human review.
+
+### v0.3.2 — applicability engine
+Evaluate supported factual gates against system descriptions. Missing or interpretively unresolved facts must route to REVIEW_REQUIRED rather than a forced binary result.
+
+### v0.3.3 — obligation/applicability evaluation
+Benchmark candidate extraction, supported applicability decisions, abstention appropriateness, and provenance completeness.
+
 ## Design principle
 
 A regulatory change record means that a selected text changed between two
