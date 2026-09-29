@@ -50,6 +50,7 @@ from .obligations import (
     SystemDescription,
 )
 from .reconcile import ReconciledChange, ReconciliationStatus, reconcile_candidates
+from .service import WorkflowEvaluationResult, evaluate_workflow
 from .review import (
     AuditEvent,
     AuditEventType,
@@ -134,6 +135,7 @@ __all__ = [
     "SystemDescription",
     "WorkflowBenchmarkReport",
     "WorkflowDemoResult",
+    "WorkflowEvaluationResult",
     "WorkflowGold",
     "WorkflowRouteGold",
     "assess_applicability",
@@ -141,6 +143,7 @@ __all__ = [
     "benchmark_changes",
     "benchmark_workflow",
     "create_review_trail",
+    "evaluate_workflow",
     "diff_provisions",
     "find_evidence_gaps",
     "link_change_to_obligations",

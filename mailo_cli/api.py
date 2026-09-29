@@ -22,6 +22,13 @@ from mailo_cli.services import execute_packaged_query
 from mailo_cli.shape_registry import ShapeRegistry
 from mailo_cli.settings import load_api_settings
 from mailo_cli.validate_cmd import build_turtle, parse_violations, run_shacl
+from mailo_cli.regulatory.service import evaluate_workflow
+from mailo_cli.regulatory.workflow_demo import run_fixed_workflow_scenario
+from mailo_cli.workflow_api import (
+    WorkflowEvaluateRequest,
+    WorkflowEvaluateResponse,
+    to_domain_request,
+)
 
 
 class Finding(BaseModel):
@@ -89,7 +96,7 @@ class SparqlResponse(BaseModel):
 app = FastAPI(
     title="MAILO Legal AI Engine",
     version=__version__,
-    description="Offline graph, reviewed-query, and SHACL-conformance workflows.",
+    description="Offline graph, reviewed-query, SHACL, and stateless RegAI workflow services.",
 )
 _RESOURCE_DIR = Path(str(files("mailo_cli").joinpath("resources")))
 _SHAPE_REGISTRY = ShapeRegistry(_RESOURCE_DIR, os.getenv("MAILO_SHAPES_MANIFEST"))
@@ -224,3 +231,33 @@ def sparql(request: SparqlRequest) -> SparqlResponse:
             )
         )
     )
+
+
+@app.post("/workflow/evaluate", response_model=WorkflowEvaluateResponse)
+def workflow_evaluate(request: WorkflowEvaluateRequest) -> WorkflowEvaluateResponse:
+    """Evaluate one supplied reviewed change against organisation workflow data.
+
+    The endpoint is stateless: it returns evidence-gap, regulatory-impact, and
+    focused review-routing outputs without persisting review cases or producing
+    a legal-compliance determination.
+    """
+
+    def run() -> WorkflowEvaluateResponse:
+        change, obligations, mappings, controls, evidence = to_domain_request(request)
+        result = evaluate_workflow(
+            change,
+            obligations=obligations,
+            mappings=mappings,
+            controls=controls,
+            evidence=evidence,
+        )
+        return WorkflowEvaluateResponse.from_domain(result)
+
+    return _bad_request(run)
+
+
+@app.get("/workflow/demo")
+def workflow_demo() -> dict[str, object]:
+    """Run the deterministic offline FRIA workflow scenario."""
+
+    return _bad_request(lambda: run_fixed_workflow_scenario().to_dict())
