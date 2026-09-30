@@ -13,6 +13,8 @@ The core workflow is deliberately inspectable: deterministic logic handles chang
 
 The canonical ontology and substantive legal constraints remain in the separate [MAILO ontology repository](https://github.com/vrkkao-eng/Mailo-ontology); this repository owns the application and workflow layer.
 
+> **Technical reviewers:** see [`docs/technical-review.md`](docs/technical-review.md) for a concise map from common architecture, correctness, evaluation and production-readiness questions to repository evidence.
+
 ## What this project demonstrates
 
 | Area | Demonstrated evidence |
