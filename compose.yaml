@@ -2,7 +2,7 @@ services:
   api:
     build: .
     ports:
-      - "8000:8000"
+      - "127.0.0.1:${MAILO_HOST_PORT:-8000}:8000"
     environment:
       MAILO_MAX_REQUEST_BYTES: ${MAILO_MAX_REQUEST_BYTES:-1048576}
       MAILO_REQUEST_TIMEOUT_SECONDS: ${MAILO_REQUEST_TIMEOUT_SECONDS:-30}

@@ -50,7 +50,7 @@ The operator surface is intentionally small:
 For a terminal-only deterministic workflow demo:
 
 ```bash
-python -m pip install -e ".[dev]"
+python -m pip install -c constraints.txt -e ".[dev]"
 mailo workflow-demo
 ```
 
@@ -151,7 +151,7 @@ The service is an optional, local API adapter over the same graph export, SHACL,
 and reviewed-query functions used by the CLI. It does not expose `/research`.
 
 ```bash
-python -m pip install -e ".[service]"
+python -m pip install -c constraints.txt -e ".[service]"
 uvicorn mailo_cli.api:app --reload
 # or: docker compose up --build
 ```
@@ -190,9 +190,29 @@ not make its conformance result a legal conclusion.
 
 Compose mounts a named volume at `/data` and defaults `MAILO_WORKFLOW_DB` to `/data/workflow.db`, so local workflow state survives container replacement. The container setup still does not include authentication/RBAC, external telemetry, rate limits, PostgreSQL/HA, Qdrant, or a vector database.
 
+For a full, disposable lifecycle check, run
+`python tools/durable_acceptance.py --report acceptance-report.json` from the
+repository root. It chooses an unused loopback port, creates a unique Compose
+project, checks workflow replay and operator views across container replacement,
+exports JSON evidence, and removes only that project's test resources. See
+[FDE delivery and recovery](docs/fde-delivery.md) for the integration contract
+and reviewer walkthrough.
+
+The supplied `.env.example` leaves `MAILO_WORKFLOW_DB` unset so a copied `.env`
+retains that Compose default. Direct local Python runs still default to
+`artifacts/workflow.db`; a custom container path must be inside a writable,
+persistent mount.
+
+The image runs the installed wheel as UID/GID `10001:10001`, with a digest-pinned
+Python base and constrained runtime dependencies. Compose publishes port 8000
+on `127.0.0.1` only. New named volumes inherit the writable `/data` ownership;
+existing volumes or bind mounts may need an explicit ownership adjustment after
+backup. See [runtime operations](docs/runtime-operations.md) for the tested
+contract, dependency refresh and existing-volume instructions.
+
 ### API runtime controls
 
-The service defaults to a 1 MiB declared request-body limit, a 30-second
+The service defaults to a 1 MiB actual request-body limit, a 30-second
 request deadline, and no CORS origins. It returns a generated `X-Request-ID`,
 adds basic browser-safety response headers, and emits a JSON access-log event
 with method, path, status, and duration. Configure the controls through
@@ -200,10 +220,16 @@ environment variables (or Compose):
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `MAILO_MAX_REQUEST_BYTES` | `1048576` | Maximum declared request body (up to 10 MiB) |
+| `MAILO_MAX_REQUEST_BYTES` | `1048576` | Maximum actual request body, including chunked input (up to 10 MiB) |
 | `MAILO_REQUEST_TIMEOUT_SECONDS` | `30` | Request deadline (up to 300 seconds) |
 | `MAILO_CORS_ORIGINS` | empty | Comma-separated, explicit browser origins; empty disables CORS |
 | `MAILO_WORKFLOW_DB` | `artifacts/workflow.db` | SQLite file used for durable workflow runs/reviews/audit records |
+
+Bodies are read in bounded form before JSON parsing or domain work. The service
+rejects excess declared or actual bytes with 413, and invalid/duplicate length
+headers or a declared/actual length mismatch with 400. These responses retain
+request IDs, safety headers and JSON access events. The deadline includes body
+intake; HTTP framing remains the ASGI server's responsibility.
 
 The deadline protects the HTTP response path but does not turn RDFLib or
 pySHACL into a resource sandbox; use trusted local shapes and deploy with
@@ -239,7 +265,7 @@ Other packaged query names are `tensions`, `obligations_samd`, and `fto_patent`.
 ## Optional live LLM tool loop
 
 ```bash
-python -m pip install -e ".[research]"
+python -m pip install -c constraints.txt -e ".[research]"
 
 # Set ANTHROPIC_API_KEY and MAILO_MODEL in your shell
 mailo research \
@@ -279,6 +305,11 @@ Regression coverage includes:
 - SHACL severity levels;
 - CLI exit codes; and
 - packaged SPARQL queries.
+
+Development and CI installs use `-c constraints.txt` with the desired extras.
+Raw ASGI regression cases cover chunked body limits, boundary sizes, malformed
+length headers, disconnects and upload deadlines. The container CI also verifies
+the non-root installed package and actual loopback HTTP behavior.
 
 A test fixture removes live credentials and rejects external socket connections. GitHub Actions runs the suite on Python 3.11, 3.12, and 3.13, builds a wheel, installs it into a clean environment outside the checkout, and smoke-tests the installed CLI.
 
