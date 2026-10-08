@@ -190,6 +190,14 @@ not make its conformance result a legal conclusion.
 
 Compose mounts a named volume at `/data` and defaults `MAILO_WORKFLOW_DB` to `/data/workflow.db`, so local workflow state survives container replacement. The container setup still does not include authentication/RBAC, external telemetry, rate limits, PostgreSQL/HA, Qdrant, or a vector database.
 
+For a full, disposable lifecycle check, run
+`python tools/durable_acceptance.py --report acceptance-report.json` from the
+repository root. It chooses an unused loopback port, creates a unique Compose
+project, checks workflow replay and operator views across container replacement,
+exports JSON evidence, and removes only that project's test resources. See
+[FDE delivery and recovery](docs/fde-delivery.md) for the integration contract
+and reviewer walkthrough.
+
 The supplied `.env.example` leaves `MAILO_WORKFLOW_DB` unset so a copied `.env`
 retains that Compose default. Direct local Python runs still default to
 `artifacts/workflow.db`; a custom container path must be inside a writable,

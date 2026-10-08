@@ -13,7 +13,7 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install -c constraints.txt ".[dev,research,service,retrieval]"
       - name: Ruff correctness lint
-        run: ruff check mailo_cli tests
+        run: ruff check mailo_cli tests tools/durable_acceptance.py
       - name: Typed core check
         run: mypy mailo_cli/regulatory mailo_cli/workflow_api.py mailo_cli/http_limits.py
       - name: Coverage
@@ -72,3 +72,20 @@ jobs:
         run: python tools/runtime_smoke.py
       - if: always()
         run: docker compose down --volumes
+
+  durable-acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Create, replay, replace container, and verify durable workflow
+        run: python tools/durable_acceptance.py --report "$RUNNER_TEMP/mailo-durable-acceptance.json"
+      - name: Preserve acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mailo-durable-acceptance
+          path: ${{ runner.temp }}/mailo-durable-acceptance.json
+          if-no-files-found: warn

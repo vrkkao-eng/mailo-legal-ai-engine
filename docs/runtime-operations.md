@@ -58,7 +58,11 @@ The smoke checker uses real HTTP chunked requests to validate the configured
 limit. If overriding the service limit, pass the same value through its
 `--max-request-bytes` argument. It also checks health/readiness and exercises
 workflow storage initialization with the operator read endpoint. Durable workflow
-creation/replay/restart acceptance is a separate next increment.
+creation/replay/restart acceptance is available through
+`python tools/durable_acceptance.py --report acceptance-report.json`; see
+[FDE delivery and recovery](fde-delivery.md). The acceptance tool overrides the
+Compose host port with an unused loopback port; normal Compose still defaults
+to `127.0.0.1:8000`.
 
 ## Non-root storage
 

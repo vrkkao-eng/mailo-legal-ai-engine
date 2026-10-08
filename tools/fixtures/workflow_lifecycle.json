@@ -1,0 +1,72 @@
+{
+  "change": {
+    "change_id": "ai-act-2026-art-27-4-changed",
+    "change_type": "text_changed",
+    "source_id": "eu-ai-act",
+    "old_version_id": "eu-ai-act-2024-08-01",
+    "new_version_id": "eu-ai-act-2026-07-27",
+    "effective_date": "2026-07-27",
+    "amendment_source_id": "eu-2026-1744",
+    "amendment_locator": {"provision": "Article 1", "paragraph": "13", "point": "a"},
+    "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+    "summary": "Reviewed Article 27(4) change.",
+    "old_locator": {"provision": "Article 27", "paragraph": "4"},
+    "new_locator": {"provision": "Article 27", "paragraph": "4"}
+  },
+  "obligations": [{
+    "obligation_id": "ai-act-art27-fria-review",
+    "source_id": "eu-ai-act",
+    "locator": {"provision": "Article 27", "paragraph": "1"},
+    "actor": "deployer",
+    "action": "perform",
+    "object": "fundamental rights impact assessment",
+    "modality": "must",
+    "condition": "where the Article 27 scope conditions are satisfied"
+  }],
+  "mappings": [{
+    "obligation_id": "ai-act-art27-fria-review",
+    "control_id": "ctrl-fria-01",
+    "rationale": "Reviewed workflow mapping.",
+    "reviewed": true
+  }],
+  "controls": [{
+    "control_id": "ctrl-fria-01",
+    "obligation_id": "ai-act-art27-fria-review",
+    "title": "Perform and document FRIA",
+    "description": "Maintain a documented FRIA workflow.",
+    "control_type": "assessment",
+    "owner_role": "AI governance",
+    "implementation_status": "not_assessed",
+    "source": "reviewed mapping"
+  }],
+  "evidence": {
+    "requirements": [
+      {
+        "requirement_id": "evreq-fria-record",
+        "control_id": "ctrl-fria-01",
+        "title": "Documented FRIA record",
+        "description": "Retained FRIA documentation.",
+        "evidence_type": "document",
+        "mandatory": true
+      },
+      {
+        "requirement_id": "evreq-mitigation-record",
+        "control_id": "ctrl-fria-01",
+        "title": "Mitigation record",
+        "description": "Mitigation documentation.",
+        "evidence_type": "document",
+        "mandatory": true
+      }
+    ],
+    "records": [{
+      "evidence_id": "ev-fria-001",
+      "requirement_id": "evreq-fria-record",
+      "title": "FRIA record",
+      "evidence_type": "document",
+      "source_uri": "https://example.org/internal/fria-001",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "collected_at": "2026-09-29T20:00:00+02:00",
+      "owner_role": "AI governance"
+    }]
+  }
+}
