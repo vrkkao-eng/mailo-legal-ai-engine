@@ -1,8 +1,14 @@
 .git
 .venv
+.env
+.env.*
+!.env.example
+*.egg-info
 artifacts
 __pycache__
 .pytest_cache
 test-tmp
 test-*-temp
 dist
+build
+.coverage*

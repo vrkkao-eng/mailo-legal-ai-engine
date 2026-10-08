@@ -17,6 +17,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse, JSONResponse
 
 from mailo_cli import __version__
+from mailo_cli.http_limits import RequestBodyLimitMiddleware
 from mailo_cli.pipeline import export_findings
 from mailo_cli.services import execute_packaged_query
 from mailo_cli.shape_registry import ShapeRegistry
@@ -130,6 +131,10 @@ _LOGGER.setLevel(logging.INFO)
 _LOGGER.propagate = False
 _WORKFLOW_REPOSITORY: SQLiteWorkflowRepository | None = None
 
+# Installed before harden_http so body rejection still gets its deadline,
+# request ID, browser-safety headers and JSON access log.
+app.add_middleware(RequestBodyLimitMiddleware, settings=lambda: _SETTINGS)
+
 
 def _get_workflow_repository() -> SQLiteWorkflowRepository:
     global _WORKFLOW_REPOSITORY
@@ -153,29 +158,12 @@ if _SETTINGS.cors_origins:
 async def harden_http(request: Request, call_next):
     request_id = str(uuid.uuid4())
     started = time.perf_counter()
-    content_length = request.headers.get("content-length")
-    if content_length:
-        try:
-            if int(content_length) > _SETTINGS.max_request_bytes:
-                response = JSONResponse(
-                    status_code=413,
-                    content={"detail": "Request body exceeds configured size limit"},
-                )
-            else:
-                response = await asyncio.wait_for(
-                    call_next(request), timeout=_SETTINGS.request_timeout_seconds
-                )
-        except ValueError:
-            response = JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
-        except TimeoutError:
-            response = JSONResponse(status_code=504, content={"detail": "Request timed out"})
-    else:
-        try:
-            response = await asyncio.wait_for(
-                call_next(request), timeout=_SETTINGS.request_timeout_seconds
-            )
-        except TimeoutError:
-            response = JSONResponse(status_code=504, content={"detail": "Request timed out"})
+    try:
+        response = await asyncio.wait_for(
+            call_next(request), timeout=_SETTINGS.request_timeout_seconds
+        )
+    except TimeoutError:
+        response = JSONResponse(status_code=504, content={"detail": "Request timed out"})
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
